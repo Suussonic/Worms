@@ -18,10 +18,12 @@ while running:
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             running = False
 
+    #Create background
     background = pygame.Surface(screen.get_size())
     background = background.convert()
     background.fill((0, 0, 0))
 
+    #Show text
     if pygame.font:
         font = pygame.font.Font(None, 64)
         text = font.render("Worms", True, (255, 255, 255))
@@ -29,6 +31,7 @@ while running:
     
     screen.blit(background, (0, 0))
     pygame.display.update()
+
     clock.tick(60)  # limits FPS to 60
             
 
