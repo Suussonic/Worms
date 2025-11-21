@@ -20,7 +20,7 @@ while running:
             running = False
     background = pygame.Surface(screen.get_size())
     background = background.convert()
-    background.fill((170, 238, 187))
+    background.fill((0, 0, 0))
     if pygame.font:
         font = pygame.font.Font(None, 64)
         text = font.render("Worms", True, (255, 255, 255))
