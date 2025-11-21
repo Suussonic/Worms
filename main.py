@@ -6,6 +6,7 @@ pygame.init()
 # Plein écran noir
 screen = pygame.display.set_mode((1280, 720), pygame.SCALED)
 pygame.display.set_caption("Worms")
+clock = pygame.time.Clock()
 
 # Remplit l’écran en noir une seule fois
 screen.fill((0, 0, 0))
@@ -23,6 +24,8 @@ while running:
     if pygame.font:
         font = pygame.font.Font(None, 64)
         text = font.render("Worms", True, (255, 255, 255))
-        background.blit(text)
+        background.blit(text, (0,0))
+    clock.tick(60)  # limits FPS to 60
+            
 
 pygame.quit()
