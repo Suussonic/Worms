@@ -31,6 +31,10 @@ Copier
 # Define background color (RGB)
 background_color = (0, 128, 255) # Blue
 
+# Set fullscreen mode
+screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+pygame.display.set_caption("Fullscreen Game")
+
 # Fill the screen with the background color
 screen.fill(background_color)
 
