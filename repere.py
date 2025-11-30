@@ -1,7 +1,7 @@
 import pygame
 
 class Worm:
-    def __init__(self, x, y, width=20, height=40):
+    def __init__(self, x, y, width, height):
         self.rect = pygame.Rect(x, y, width, height)
         
         self.velocity = pygame.math.Vector2(0, 0)
