@@ -1,6 +1,6 @@
 import os
 import pygame
-from repere import Worm
+from character import Worm
 
 pygame.init()
 
