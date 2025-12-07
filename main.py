@@ -5,12 +5,16 @@ from character import Worm
 from gun import Projectile
 from trajectory import TrajectoryCalculator
 from enemy import Enemy
+from terrain import Terrain
 
 pygame.init()
 
 WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
+
+# Créer le terrain
+terrain = Terrain(WIDTH, HEIGHT)
 
 mon_ver = Worm(100, 100, 20, 40)  # x, y, width, height
 ennemi = Enemy(WIDTH - 60, 100, 20, 40)  # x, y, width, height - à droite de l'écran
@@ -62,8 +66,8 @@ while running:
         charging_power = min(charging_power + 0.2, 20)  # Max 20
     
     mon_ver.handle_input()
-    mon_ver.update(HEIGHT)
-    ennemi.update(HEIGHT)  # Appliquer la gravité à l'ennemi
+    mon_ver.update(HEIGHT, terrain)  # Passer le terrain pour les collisions
+    ennemi.update(HEIGHT, terrain)  # Appliquer la gravité et collision avec terrain
     
     # Mettre à jour tous les projectiles
     for projectile in projectiles[:]:
@@ -72,6 +76,14 @@ while running:
             continue
             
         projectile.update()
+        
+        # Vérifier collision avec le terrain
+        if terrain.is_solid(projectile.x, projectile.y):
+            terrain.create_crater(projectile.x, projectile.y, radius=30)
+            projectile.active = False
+            projectiles.remove(projectile)
+            print(f"Impact terrain à ({int(projectile.x)}, {int(projectile.y)})")
+            continue
         
         # Vérifier collision avec l'ennemi
         if ennemi.is_alive() and projectile.check_collision(ennemi.rect):
@@ -92,7 +104,10 @@ while running:
         if projectile.is_out_of_bounds(WIDTH, HEIGHT):
             projectiles.remove(projectile)
 
-    screen.fill((50, 50, 50))
+    screen.fill((135, 206, 235))  # Bleu ciel comme fond
+    
+    # Dessiner le terrain en premier
+    terrain.draw(screen)
     
     pygame.draw.rect(screen, (0, 255, 0), mon_ver.rect)
     mon_ver.draw_hp(screen)  # Afficher les PV du joueur
