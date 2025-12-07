@@ -3,6 +3,7 @@ import pygame
 import math
 from character import Worm
 from gun import Projectile
+from trajectory import TrajectoryCalculator
 
 pygame.init()
 
@@ -14,6 +15,7 @@ mon_ver = Worm(100, 100, 20, 40)  # x, y, width, height
 projectiles = []  # Liste pour stocker tous les projectiles
 charging_power = 0  # Puissance en cours de charge
 is_charging = False  # Indique si on est en train de charger
+trajectory_calc = TrajectoryCalculator(gravity=0.5)  # Même gravité que les projectiles
 
 # Plein écran noir
 # screen = pygame.display.set_mode((1280, 720), pygame.SCALED)
@@ -86,6 +88,14 @@ while running:
     
     power_text = font.render(f"Puissance: {int(charging_power)}", True, (255, 255, 255))
     screen.blit(power_text, (10, 50))
+    
+    # Afficher la trajectoire prédite si on est en train de charger
+    if is_charging and charging_power > 0:
+        trajectory_points = trajectory_calc.calculate_trajectory_points(
+            mon_ver.rect.centerx, mon_ver.rect.centery,
+            mon_ver.aim_angle, charging_power
+        )
+        trajectory_calc.draw_trajectory(screen, trajectory_points, color=(255, 100, 100))
     
     # Dessiner tous les projectiles
     for projectile in projectiles:
