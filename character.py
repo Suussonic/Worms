@@ -11,6 +11,10 @@ class Worm:
         self.GRAVITY = 0.8      # Gravité
         
         self.on_ground = False
+        
+        # Système de tir
+        self.aim_angle = 0      # Angle de tir en degrés (0 = horizontal droite)
+        self.aim_power = 15     # Puissance du tir
 
     def handle_input(self):
         keys = pygame.key.get_pressed()
@@ -24,7 +28,7 @@ class Worm:
             self.velocity.x = 0
 
         # Saut (seulement si on est au sol)
-        if (keys[pygame.K_SPACE] or keys[pygame.K_z] or keys[pygame.K_UP]) and self.on_ground:
+        if keys[pygame.K_SPACE] and self.on_ground:
             self.jump()
 
     def jump(self):

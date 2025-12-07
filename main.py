@@ -1,5 +1,6 @@
 import os
 import pygame
+import math
 from character import Worm
 from gun import Projectile
 
@@ -29,10 +30,18 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         
+        # Contrôle de l'angle de tir
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_UP:
+                mon_ver.aim_angle = min(mon_ver.aim_angle + 5, 90)  # Max 90°
+            elif event.key == pygame.K_DOWN:
+                mon_ver.aim_angle = max(mon_ver.aim_angle - 5, -180)  # Min -90°
+        
         # Tirer un projectile avec la touche Entrée
         if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
-            # Le projectile part du centre du personnage
-            projectile = Projectile(mon_ver.rect.centerx, mon_ver.rect.centery)
+            # Le projectile part du centre du personnage avec l'angle et la puissance
+            projectile = Projectile(mon_ver.rect.centerx, mon_ver.rect.centery, 
+                                   mon_ver.aim_angle, mon_ver.aim_power)
             projectiles.append(projectile)
 
     mon_ver.handle_input()
@@ -47,6 +56,20 @@ while running:
     screen.fill((50, 50, 50))
     
     pygame.draw.rect(screen, (0, 255, 0), mon_ver.rect)
+    
+    # Dessiner la ligne de visée
+    aim_length = 50
+    angle_rad = math.radians(mon_ver.aim_angle)
+    end_x = mon_ver.rect.centerx + aim_length * math.cos(angle_rad)
+    end_y = mon_ver.rect.centery + aim_length * math.sin(angle_rad)
+    pygame.draw.line(screen, (255, 255, 0), 
+                    (mon_ver.rect.centerx, mon_ver.rect.centery), 
+                    (end_x, end_y), 3)
+    
+    # Afficher l'angle à l'écran
+    font = pygame.font.Font(None, 36)
+    angle_text = font.render(f"Angle: {mon_ver.aim_angle}°", True, (255, 255, 255))
+    screen.blit(angle_text, (10, 10))
     
     # Dessiner tous les projectiles
     for projectile in projectiles:

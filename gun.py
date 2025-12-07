@@ -1,14 +1,16 @@
 import pygame
+import math
 
 class Projectile:
-    def __init__(self, x, y):
+    def __init__(self, x, y, angle, power):
         self.x = x
         self.y = y
         self.radius = 5
         
-        # Vitesse initiale vers la droite
-        self.velocity_x = 10
-        self.velocity_y = 0
+        # Convertir l'angle en radians et calculer les composantes de vitesse
+        angle_rad = math.radians(angle)
+        self.velocity_x = power * math.cos(angle_rad)
+        self.velocity_y = power * math.sin(angle_rad)
         
         self.GRAVITY = 0.5
         self.active = True
