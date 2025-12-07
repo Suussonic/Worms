@@ -67,14 +67,38 @@ while running:
     
     # Mettre à jour tous les projectiles
     for projectile in projectiles[:]:
+        if not projectile.active:
+            projectiles.remove(projectile)
+            continue
+            
         projectile.update()
+        
+        # Vérifier collision avec l'ennemi
+        if ennemi.is_alive() and projectile.check_collision(ennemi.rect):
+            ennemi.take_damage(20)  # 20 dégâts
+            projectile.active = False
+            projectiles.remove(projectile)
+            print(f"Ennemi touché! HP restants: {ennemi.hp}")  # Debug
+            continue
+        
+        # Vérifier collision avec le joueur
+        if mon_ver.is_alive() and projectile.check_collision(mon_ver.rect):
+            mon_ver.take_damage(20)  # 20 dégâts
+            projectile.active = False
+            projectiles.remove(projectile)
+            print(f"Joueur touché! HP restants: {mon_ver.hp}")  # Debug
+            continue
+        
         if projectile.is_out_of_bounds(WIDTH, HEIGHT):
             projectiles.remove(projectile)
 
     screen.fill((50, 50, 50))
     
     pygame.draw.rect(screen, (0, 255, 0), mon_ver.rect)
-    ennemi.draw(screen)  # Dessiner l'ennemi
+    mon_ver.draw_hp(screen)  # Afficher les PV du joueur
+    
+    if ennemi.is_alive():
+        ennemi.draw(screen)  # Dessiner l'ennemi seulement s'il est vivant
     
     # Dessiner la ligne de visée
     aim_length = 50

@@ -15,6 +15,10 @@ class Worm:
         # Système de tir
         self.aim_angle = 0      # Angle de tir en degrés (0 = horizontal droite)
         self.aim_power = 15     # Puissance du tir
+        
+        # Points de vie
+        self.hp = 100
+        self.max_hp = 100
 
     def handle_input(self):
         keys = pygame.key.get_pressed()
@@ -51,3 +55,15 @@ class Worm:
 
     def get_position(self):
         return (self.rect.x, self.rect.y)
+    
+    def take_damage(self, damage):
+        self.hp = max(0, self.hp - damage)
+    
+    def is_alive(self):
+        return self.hp > 0
+    
+    def draw_hp(self, screen):
+        # Afficher les PV au-dessus du personnage
+        font = pygame.font.Font(None, 24)
+        hp_text = font.render(f"HP: {self.hp}", True, (255, 255, 255))
+        screen.blit(hp_text, (self.rect.x - 5, self.rect.y - 25))

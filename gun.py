@@ -32,3 +32,9 @@ class Projectile:
     
     def is_out_of_bounds(self, width, height):
         return self.x < 0 or self.x > width or self.y > height
+    
+    def check_collision(self, target_rect):
+        """Vérifie la collision avec un rectangle (personnage ou ennemi)"""
+        projectile_rect = pygame.Rect(self.x - self.radius, self.y - self.radius, 
+                                     self.radius * 2, self.radius * 2)
+        return projectile_rect.colliderect(target_rect)
