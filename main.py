@@ -12,6 +12,8 @@ clock = pygame.time.Clock()
 
 mon_ver = Worm(100, 100, 20, 40)  # x, y, width, height
 projectiles = []  # Liste pour stocker tous les projectiles
+charging_power = 0  # Puissance en cours de charge
+is_charging = False  # Indique si on est en train de charger
 
 # Plein écran noir
 # screen = pygame.display.set_mode((1280, 720), pygame.SCALED)
@@ -36,14 +38,25 @@ while running:
                 mon_ver.aim_angle = min(mon_ver.aim_angle + 5, 90)  # Max 90°
             elif event.key == pygame.K_DOWN:
                 mon_ver.aim_angle = max(mon_ver.aim_angle - 5, -180)  # Min -90°
+            elif event.key == pygame.K_RETURN:
+                # Commencer à charger la puissance
+                is_charging = True
+                charging_power = 0
         
-        # Tirer un projectile avec la touche Entrée
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
-            # Le projectile part du centre du personnage avec l'angle et la puissance
-            projectile = Projectile(mon_ver.rect.centerx, mon_ver.rect.centery, 
-                                   mon_ver.aim_angle, mon_ver.aim_power)
-            projectiles.append(projectile)
+        # Tirer quand on relâche Entrée
+        if event.type == pygame.KEYUP and event.key == pygame.K_RETURN:
+            if is_charging:
+                # Tirer avec la puissance chargée
+                projectile = Projectile(mon_ver.rect.centerx, mon_ver.rect.centery, 
+                                       mon_ver.aim_angle, charging_power)
+                projectiles.append(projectile)
+                is_charging = False
+                charging_power = 0
 
+    # Augmenter la puissance si on est en train de charger
+    if is_charging:
+        charging_power = min(charging_power + 0.2, 20)  # Max 20
+    
     mon_ver.handle_input()
     mon_ver.update(HEIGHT)
     
@@ -66,10 +79,13 @@ while running:
                     (mon_ver.rect.centerx, mon_ver.rect.centery), 
                     (end_x, end_y), 3)
     
-    # Afficher l'angle à l'écran
+    # Afficher l'angle et la puissance à l'écran
     font = pygame.font.Font(None, 36)
     angle_text = font.render(f"Angle: {mon_ver.aim_angle}°", True, (255, 255, 255))
     screen.blit(angle_text, (10, 10))
+    
+    power_text = font.render(f"Puissance: {int(charging_power)}", True, (255, 255, 255))
+    screen.blit(power_text, (10, 50))
     
     # Dessiner tous les projectiles
     for projectile in projectiles:
