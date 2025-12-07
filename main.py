@@ -4,6 +4,7 @@ import math
 from character import Worm
 from gun import Projectile
 from trajectory import TrajectoryCalculator
+from enemy import Enemy
 
 pygame.init()
 
@@ -12,6 +13,7 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
 
 mon_ver = Worm(100, 100, 20, 40)  # x, y, width, height
+ennemi = Enemy(WIDTH - 60, 100, 20, 40)  # x, y, width, height - à droite de l'écran
 projectiles = []  # Liste pour stocker tous les projectiles
 charging_power = 0  # Puissance en cours de charge
 is_charging = False  # Indique si on est en train de charger
@@ -61,6 +63,7 @@ while running:
     
     mon_ver.handle_input()
     mon_ver.update(HEIGHT)
+    ennemi.update(HEIGHT)  # Appliquer la gravité à l'ennemi
     
     # Mettre à jour tous les projectiles
     for projectile in projectiles[:]:
@@ -71,6 +74,7 @@ while running:
     screen.fill((50, 50, 50))
     
     pygame.draw.rect(screen, (0, 255, 0), mon_ver.rect)
+    ennemi.draw(screen)  # Dessiner l'ennemi
     
     # Dessiner la ligne de visée
     aim_length = 50
