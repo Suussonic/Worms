@@ -56,10 +56,14 @@ class Worm:
         # Gauche / Droite
         if keys[controls['left']]:
             self.velocity.x = -self.SPEED
-            self.facing_right = False
+            if self.facing_right:
+                self.facing_right = False
+                self.aim_angle = 180 - self.aim_angle # On retourne la visée
         elif keys[controls['right']]:
             self.velocity.x = self.SPEED
-            self.facing_right = True
+            if not self.facing_right:
+                self.facing_right = True
+                self.aim_angle = 180 - self.aim_angle # On retourne la visée
         else:
             self.velocity.x = 0
 

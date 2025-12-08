@@ -433,13 +433,23 @@ while running:
             if current_worm and current_worm.is_alive():
                 keys = pygame.key.get_pressed()
                 
-                # Flèche du bas -> angle monte (inversé)
+                # Flèche du bas -> Viser vers le bas
                 if keys[controls['aim_down']]:
-                    current_worm.aim_angle = min(current_worm.aim_angle + 1, 90)
+                    if current_worm.facing_right:
+                        # Droite : on augmente vers 90°
+                        current_worm.aim_angle = min(current_worm.aim_angle + 1, 90)
+                    else:
+                        # Gauche : on diminue vers 90°
+                        current_worm.aim_angle = max(current_worm.aim_angle - 1, 90)
                 
-                # Flèche du haut -> angle descend (inversé)
+                # Flèche du haut -> Viser vers le haut
                 if keys[controls['aim_up']]:
-                    current_worm.aim_angle = max(current_worm.aim_angle - 1, -180)
+                    if current_worm.facing_right:
+                        # Droite : on diminue vers -90°
+                        current_worm.aim_angle = max(current_worm.aim_angle - 1, -90)
+                    else:
+                        # Gauche : on augmente vers 270° (équivalent à -90°)
+                        current_worm.aim_angle = min(current_worm.aim_angle + 1, 270)
 
         # Déplacement du ver actif
         if len(projectiles) == 0:
