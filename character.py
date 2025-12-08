@@ -6,8 +6,8 @@ class Worm:
         
         self.velocity = pygame.math.Vector2(0, 0)
         
-        self.SPEED = 5          # Vitesse horizontale
-        self.JUMP_FORCE = -15   # Force du saut
+        self.SPEED = 2          # Vitesse horizontale
+        self.JUMP_FORCE = -8   # Force du saut
         self.GRAVITY = 0.8      # Gravité
         
         self.on_ground = False
