@@ -75,8 +75,28 @@ class Grenade:
     
     def handle_terrain_collision(self, terrain, old_x, old_y):
         """Gère les collisions et rebonds avec le terrain"""
-        # Vérifier si la grenade touche le terrain
-        if terrain.is_solid(int(self.x), int(self.y)):
+        # Vérifier si la grenade touche le terrain (vérifier plusieurs points autour du rayon)
+        collision_detected = False
+        
+        # Vérifier le centre et 8 points autour du cercle de la grenade
+        check_points = [
+            (0, 0),  # Centre
+            (self.radius, 0),  # Droite
+            (-self.radius, 0),  # Gauche
+            (0, self.radius),  # Bas
+            (0, -self.radius),  # Haut
+            (self.radius * 0.7, self.radius * 0.7),  # Diagonale bas-droite
+            (-self.radius * 0.7, self.radius * 0.7),  # Diagonale bas-gauche
+            (self.radius * 0.7, -self.radius * 0.7),  # Diagonale haut-droite
+            (-self.radius * 0.7, -self.radius * 0.7),  # Diagonale haut-gauche
+        ]
+        
+        for dx, dy in check_points:
+            if terrain.is_solid(int(self.x + dx), int(self.y + dy)):
+                collision_detected = True
+                break
+        
+        if collision_detected:
             # Revenir à l'ancienne position
             self.x = old_x
             self.y = old_y
@@ -87,7 +107,7 @@ class Grenade:
             collision_normal_y = 0
             
             # Vérifier les 4 directions principales
-            check_distance = 10
+            check_distance = self.radius + 5
             if terrain.is_solid(int(self.x), int(self.y - check_distance)):
                 collision_normal_y = 1  # Sol en dessous
             if terrain.is_solid(int(self.x), int(self.y + check_distance)):
