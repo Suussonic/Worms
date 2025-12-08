@@ -7,7 +7,7 @@ class TrajectoryCalculator:
     def __init__(self, gravity=0.5):
         self.gravity = gravity
     
-    def calculate_trajectory_points(self, start_x, start_y, angle, power, max_points=100):
+    def calculate_trajectory_points(self, start_x, start_y, angle, power, max_points=100, is_grenade=False, air_friction=False):
         """
         Calcule les points de la trajectoire d'un projectile
         
@@ -16,6 +16,8 @@ class TrajectoryCalculator:
             angle: Angle de tir en degrés
             power: Puissance du tir
             max_points: Nombre maximum de points à calculer
+            is_grenade: Si True, réduit la vitesse initiale (grenade)
+            air_friction: Si True, applique les frottements de l'air
             
         Returns:
             Liste de tuples (x, y) représentant la trajectoire
@@ -24,8 +26,11 @@ class TrajectoryCalculator:
         
         # Convertir l'angle en radians et calculer les vitesses initiales
         angle_rad = math.radians(angle)
-        vx = power * math.cos(angle_rad)
-        vy = power * math.sin(angle_rad)
+        speed_multiplier = 0.6 if is_grenade else 1.0  # Grenades plus lentes
+        vx = power * speed_multiplier * math.cos(angle_rad)
+        vy = power * speed_multiplier * math.sin(angle_rad)
+        
+        air_friction_coef = 0.98 if air_friction else 1.0
         
         # Simuler la trajectoire
         x, y = start_x, start_y
@@ -38,8 +43,13 @@ class TrajectoryCalculator:
             y += vy
             vy += self.gravity
             
+            # Appliquer les frottements si activés
+            if air_friction:
+                vx *= air_friction_coef
+                vy *= air_friction_coef
+            
             # Arrêter si on sort de l'écran (vers le bas)
-            if y > 600:  # HEIGHT
+            if y > 800:  # HEIGHT
                 break
         
         return points

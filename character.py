@@ -22,6 +22,10 @@ class Worm:
         
         # Nom du ver
         self.name = name
+        
+        # Arme individuelle (chaque ver a sa propre arme)
+        self.selected_weapon = "rocket"  # "rocket" ou "grenade"
+        self.air_friction_enabled = False
 
     def handle_input(self, controls=None):
         keys = pygame.key.get_pressed()

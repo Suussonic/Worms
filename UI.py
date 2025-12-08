@@ -73,7 +73,8 @@ class UI:
             'jump': 'Sauter',
             'aim_up': 'Angle vers le haut',
             'aim_down': 'Angle vers le bas',
-            'shoot': 'Tirer'
+            'shoot': 'Tirer',
+            'weapon_menu': 'Menu d\'arme'
         }
         
         for key, label in control_labels.items():
@@ -301,11 +302,16 @@ class UI:
     def draw_trajectory(screen, trajectory_calc, player, charging_power):
         """Dessine la trajectoire prédite pendant la charge"""
         if charging_power > 0:
+            is_grenade = player.selected_weapon == "grenade"
             trajectory_points = trajectory_calc.calculate_trajectory_points(
                 player.rect.centerx, player.rect.centery,
-                player.aim_angle, charging_power
+                player.aim_angle, charging_power,
+                is_grenade=is_grenade,
+                air_friction=player.air_friction_enabled
             )
-            trajectory_calc.draw_trajectory(screen, trajectory_points, color=(255, 100, 100))
+            # Couleur différente selon l'arme
+            color = (0, 255, 0) if is_grenade else (255, 100, 100)
+            trajectory_calc.draw_trajectory(screen, trajectory_points, color=color)
     
     @staticmethod
     def draw_projectiles(screen, projectiles):
@@ -342,3 +348,53 @@ class UI:
         screen.blit(button_text, button_text_rect)
         
         return button_rect  # Retourner le rect du bouton pour détecter les clics
+    
+    @staticmethod
+    def draw_weapon_menu(screen, worm, selected_weapon, air_friction):
+        """Dessine le menu de sélection d'arme au-dessus du ver"""
+        menu_width = 200
+        menu_height = 105
+        menu_x = worm.rect.centerx - menu_width // 2
+        menu_y = worm.rect.top - menu_height - 10
+        
+        # S'assurer que le menu reste dans l'écran
+        menu_x = max(10, min(menu_x, screen.get_width() - menu_width - 10))
+        menu_y = max(10, menu_y)
+        
+        # Fond du menu
+        menu_rect = pygame.Rect(menu_x, menu_y, menu_width, menu_height)
+        pygame.draw.rect(screen, (40, 40, 40), menu_rect)
+        pygame.draw.rect(screen, (255, 255, 255), menu_rect, 2)
+        
+        font = pygame.font.Font(None, 28)
+        
+        # Option Roquette
+        rocket_rect = pygame.Rect(menu_x, menu_y, menu_width, 30)
+        rocket_color = (0, 150, 0) if selected_weapon == "rocket" else (70, 70, 70)
+        pygame.draw.rect(screen, rocket_color, rocket_rect)
+        pygame.draw.rect(screen, (255, 255, 255), rocket_rect, 1)
+        
+        rocket_text = font.render("Roquette", True, (255, 255, 255))
+        rocket_text_rect = rocket_text.get_rect(center=rocket_rect.center)
+        screen.blit(rocket_text, rocket_text_rect)
+        
+        # Option Grenade
+        grenade_rect = pygame.Rect(menu_x, menu_y + 35, menu_width, 30)
+        grenade_color = (0, 150, 0) if selected_weapon == "grenade" else (70, 70, 70)
+        pygame.draw.rect(screen, grenade_color, grenade_rect)
+        pygame.draw.rect(screen, (255, 255, 255), grenade_rect, 1)
+        
+        grenade_text = font.render("Grenade", True, (255, 255, 255))
+        grenade_text_rect = grenade_text.get_rect(center=grenade_rect.center)
+        screen.blit(grenade_text, grenade_text_rect)
+        
+        # Option Frottements d'air
+        friction_rect = pygame.Rect(menu_x, menu_y + 70, menu_width, 30)
+        pygame.draw.rect(screen, (70, 70, 70), friction_rect)
+        pygame.draw.rect(screen, (255, 255, 255), friction_rect, 1)
+        
+        friction_status = "ON" if air_friction else "OFF"
+        friction_color = (0, 255, 0) if air_friction else (255, 100, 100)
+        friction_text = font.render(f"Frottements: {friction_status}", True, friction_color)
+        friction_text_rect = friction_text.get_rect(center=friction_rect.center)
+        screen.blit(friction_text, friction_text_rect)

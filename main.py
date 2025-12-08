@@ -3,6 +3,7 @@ import pygame
 import math
 from character import Worm
 from gun import Projectile
+from grenade import Grenade
 from trajectory import TrajectoryCalculator
 from terrain import Terrain
 from UI import UI
@@ -45,7 +46,8 @@ controls = {
     'jump': pygame.K_SPACE,
     'aim_up': pygame.K_UP,
     'aim_down': pygame.K_DOWN,
-    'shoot': pygame.K_RETURN
+    'shoot': pygame.K_RETURN,
+    'weapon_menu': pygame.K_TAB  # Touche pour ouvrir le menu d'arme (alternative au clic droit)
 }
 
 # Variables de jeu
@@ -61,6 +63,9 @@ player_names = []  # Liste des noms de joueurs ("p1", "p2", ...)
 # Gestion du tir
 charging_power = 0
 is_charging = False
+
+# Menu d'arme
+weapon_menu_open = False
 
 # Liste des projectiles
 projectiles = []
@@ -79,7 +84,7 @@ def init_game():
     global terrain, players_worms, projectiles, player_names
     global charging_power, is_charging, game_over, winner
     global current_player_index, current_worm_index, last_shooter
-    global turn_start_time, time_remaining
+    global turn_start_time, time_remaining, weapon_menu_open
 
     terrain = Terrain(WIDTH, HEIGHT)
     
@@ -132,6 +137,7 @@ def init_game():
     last_shooter = None
     turn_start_time = pygame.time.get_ticks()
     time_remaining = turn_time_limit
+    weapon_menu_open = False
 
     print(f"Tour du joueur {player_names[0]}")
 
@@ -285,6 +291,13 @@ while running:
         if not in_menu and not in_game_setup and not in_settings and not game_over and event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 is_paused = not is_paused
+                # Mettre en pause ou reprendre les grenades
+                for projectile in projectiles:
+                    if isinstance(projectile, Grenade):
+                        if is_paused:
+                            projectile.pause()
+                        else:
+                            projectile.resume()
         
         # Clics dans le menu pause
         if is_paused and not in_settings and event.type == pygame.MOUSEBUTTONDOWN:
@@ -295,6 +308,10 @@ while running:
             
             if continue_button.collidepoint(mouse_pos):
                 is_paused = False
+                # Reprendre les grenades
+                for projectile in projectiles:
+                    if isinstance(projectile, Grenade):
+                        projectile.resume()
             elif settings_button.collidepoint(mouse_pos):
                 in_settings = True
             elif quit_button.collidepoint(mouse_pos):
@@ -308,6 +325,44 @@ while running:
             button_rect = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 + 50, 200, 50)
             if button_rect.collidepoint(mouse_pos):
                 init_game()
+        
+        # ---------------------------
+        #  MENU SELECTION D'ARME
+        # ---------------------------
+        # Clic droit ou touche configurable pour ouvrir/fermer le menu d'arme
+        if not game_over and not in_menu and not in_game_setup and not in_settings and not is_paused:
+            # Clic droit
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 3:
+                if len(projectiles) == 0:  # Seulement si pas de projectile en vol
+                    weapon_menu_open = not weapon_menu_open
+            
+            # Touche configurable
+            if event.type == pygame.KEYDOWN and event.key == controls['weapon_menu']:
+                if len(projectiles) == 0:
+                    weapon_menu_open = not weapon_menu_open
+            
+            # Clics dans le menu d'arme
+            if weapon_menu_open and event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Clic gauche
+                mouse_pos = pygame.mouse.get_pos()
+                current_worm = get_current_worm()
+                
+                if current_worm and current_worm.is_alive():
+                    menu_x = current_worm.rect.centerx - 100
+                    menu_y = current_worm.rect.top - 120
+                    
+                    # Boutons du menu (3 options)
+                    rocket_button = pygame.Rect(menu_x, menu_y, 200, 30)
+                    grenade_button = pygame.Rect(menu_x, menu_y + 35, 200, 30)
+                    friction_button = pygame.Rect(menu_x, menu_y + 70, 200, 30)
+                    
+                    if rocket_button.collidepoint(mouse_pos):
+                        current_worm.selected_weapon = "rocket"
+                        weapon_menu_open = False
+                    elif grenade_button.collidepoint(mouse_pos):
+                        current_worm.selected_weapon = "grenade"
+                        weapon_menu_open = False
+                    elif friction_button.collidepoint(mouse_pos):
+                        current_worm.air_friction_enabled = not current_worm.air_friction_enabled
 
         # ---------------------------
         #  GESTION DES TOUCHES
@@ -328,18 +383,31 @@ while running:
                 current_worm = get_current_worm()
                 current_player = get_current_player()
                 
-                projectile = Projectile(
-                    current_worm.rect.centerx,
-                    current_worm.rect.centery,
-                    current_worm.aim_angle,
-                    charging_power,
-                    owner=current_player
-                )
+                # Créer le projectile en fonction de l'arme du ver
+                if current_worm.selected_weapon == "rocket":
+                    projectile = Projectile(
+                        current_worm.rect.centerx,
+                        current_worm.rect.centery,
+                        current_worm.aim_angle,
+                        charging_power,
+                        owner=current_player,
+                        air_friction=current_worm.air_friction_enabled
+                    )
+                else:  # grenade
+                    projectile = Grenade(
+                        current_worm.rect.centerx,
+                        current_worm.rect.centery,
+                        current_worm.aim_angle,
+                        charging_power,
+                        owner=current_player,
+                        air_friction=current_worm.air_friction_enabled
+                    )
+                
                 last_shooter = current_player
-
                 projectiles.append(projectile)
                 is_charging = False
                 charging_power = 0
+                weapon_menu_open = False  # Fermer le menu après le tir
 
     # ---------------------------
     #  MISE À JOUR DU JEU
@@ -412,13 +480,42 @@ while running:
     #  MISE À JOUR DES PROJECTILES
     # ---------------------------
     for projectile in projectiles[:]:
-        projectile.update()
-
-        # Collision avec le terrain
-        if terrain.is_solid(projectile.x, projectile.y):
-            terrain.create_crater(projectile.x, projectile.y, radius=30)
-            projectiles.remove(projectile)
-            continue
+        # Les grenades gèrent leurs propres collisions avec le terrain
+        if isinstance(projectile, Grenade):
+            projectile.update(terrain)
+            
+            # Si la grenade a explosé (plus active)
+            if not projectile.active:
+                terrain.create_crater(projectile.x, projectile.y, radius=40)
+                
+                # Dégâts aux vers proches de l'explosion
+                explosion_radius = 80  # Rayon d'effet augmenté
+                max_damage = 50  # Dégâts maximum au centre
+                for player, worms_list in players_worms.items():
+                    for worm in worms_list:
+                        if worm.is_alive():
+                            # Calculer la distance entre le ver et l'explosion
+                            distance = math.sqrt((worm.rect.centerx - projectile.x)**2 + 
+                                               (worm.rect.centery - projectile.y)**2)
+                            if distance < explosion_radius:
+                                # Dégâts avec formule quadratique (plus de dégâts près du centre)
+                                distance_ratio = distance / explosion_radius
+                                damage = int(max_damage * (1 - distance_ratio) ** 2)
+                                damage = max(5, damage)  # Minimum 5 HP de dégâts
+                                worm.take_damage(damage)
+                                print(f"Ver {worm.name} touché par explosion ! -{damage} HP (distance: {int(distance)}px)")
+                
+                projectiles.remove(projectile)
+                continue
+        else:
+            # Projectile normal (roquette)
+            projectile.update()
+            
+            # Collision avec le terrain
+            if terrain.is_solid(projectile.x, projectile.y):
+                terrain.create_crater(projectile.x, projectile.y, radius=30)
+                projectiles.remove(projectile)
+                continue
 
         # Collision avec les vers ennemis
         hit = False
@@ -426,10 +523,11 @@ while running:
             if player != projectile.owner:  # Ne pas toucher ses propres vers
                 for worm in worms_list:
                     if worm.is_alive() and projectile.check_collision(worm.rect):
-                        worm.take_damage(20)
+                        damage = 30 if isinstance(projectile, Grenade) else 20
+                        worm.take_damage(damage)
                         terrain.create_crater(projectile.x, projectile.y, radius=30)
                         projectiles.remove(projectile)
-                        print(f"Ver du joueur {player} touché !")
+                        print(f"Ver {worm.name} touché !")
                         hit = True
                         break
             if hit:
@@ -503,7 +601,8 @@ while running:
                 'jump': 'Sauter',
                 'aim_up': 'Angle vers le haut',
                 'aim_down': 'Angle vers le bas',
-                'shoot': 'Tirer'
+                'shoot': 'Tirer',
+                'weapon_menu': 'Menu d\'arme'
             }
             UI.draw_key_prompt(screen, WIDTH, HEIGHT, control_labels[key_to_change])
         else:
@@ -531,9 +630,14 @@ while running:
             # Trajectoire prévisionnelle si on charge un tir
             if is_charging:
                 UI.draw_trajectory(screen, trajectory_calc, current_worm, charging_power)
+            
+            # Menu de sélection d'arme
+            if weapon_menu_open:
+                UI.draw_weapon_menu(screen, current_worm, current_worm.selected_weapon, current_worm.air_friction_enabled)
 
         # Dessiner les projectiles
-        UI.draw_projectiles(screen, projectiles)
+        for projectile in projectiles:
+            projectile.draw(screen)
 
         # Ecran de fin
         if game_over:
@@ -553,7 +657,8 @@ while running:
                     'jump': 'Sauter',
                     'aim_up': 'Angle vers le haut',
                     'aim_down': 'Angle vers le bas',
-                    'shoot': 'Tirer'
+                    'shoot': 'Tirer',
+                    'weapon_menu': 'Menu d\'arme'
                 }
                 UI.draw_key_prompt(screen, WIDTH, HEIGHT, control_labels[key_to_change])
             else:
