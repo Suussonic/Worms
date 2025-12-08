@@ -30,7 +30,7 @@ class UI:
         pygame.draw.rect(screen, (50, 50, 200), settings_button)
         pygame.draw.rect(screen, (255, 255, 255), settings_button, 3)
         
-        settings_text = button_font.render("SETTINGS", True, (255, 255, 255))
+        settings_text = button_font.render("PARAMETRES", True, (255, 255, 255))
         settings_text_rect = settings_text.get_rect(center=settings_button.center)
         screen.blit(settings_text, settings_text_rect)
         
@@ -123,6 +123,51 @@ class UI:
         cancel_text = cancel_font.render("Appuyez sur ESC pour annuler", True, (200, 200, 200))
         cancel_rect = cancel_text.get_rect(center=(width // 2, height // 2 + 60))
         screen.blit(cancel_text, cancel_rect)
+    
+    @staticmethod
+    def draw_pause_menu(screen, width, height):
+        """Dessine le menu pause avec 3 boutons"""
+        # Overlay semi-transparent
+        overlay = pygame.Surface((width, height))
+        overlay.set_alpha(180)
+        overlay.fill((0, 0, 0))
+        screen.blit(overlay, (0, 0))
+        
+        # Titre PAUSE
+        title_font = pygame.font.Font(None, 100)
+        title = title_font.render("PAUSE", True, (255, 255, 255))
+        title_rect = title.get_rect(center=(width // 2, height // 4))
+        screen.blit(title, title_rect)
+        
+        # Bouton Continuer
+        continue_button = pygame.Rect(width // 2 - 150, height // 2 - 70, 300, 60)
+        pygame.draw.rect(screen, (0, 200, 0), continue_button)
+        pygame.draw.rect(screen, (255, 255, 255), continue_button, 3)
+        
+        button_font = pygame.font.Font(None, 50)
+        continue_text = button_font.render("CONTINUER", True, (255, 255, 255))
+        continue_text_rect = continue_text.get_rect(center=continue_button.center)
+        screen.blit(continue_text, continue_text_rect)
+        
+        # Bouton Settings
+        settings_button = pygame.Rect(width // 2 - 150, height // 2 + 10, 300, 60)
+        pygame.draw.rect(screen, (50, 50, 200), settings_button)
+        pygame.draw.rect(screen, (255, 255, 255), settings_button, 3)
+        
+        settings_text = button_font.render("PARAMETRES", True, (255, 255, 255))
+        settings_text_rect = settings_text.get_rect(center=settings_button.center)
+        screen.blit(settings_text, settings_text_rect)
+        
+        # Bouton Quitter
+        quit_button = pygame.Rect(width // 2 - 150, height // 2 + 90, 300, 60)
+        pygame.draw.rect(screen, (200, 0, 0), quit_button)
+        pygame.draw.rect(screen, (255, 255, 255), quit_button, 3)
+        
+        quit_text = button_font.render("QUITTER", True, (255, 255, 255))
+        quit_text_rect = quit_text.get_rect(center=quit_button.center)
+        screen.blit(quit_text, quit_text_rect)
+        
+        return continue_button, settings_button, quit_button
     
     @staticmethod
     def draw_player(screen, player):

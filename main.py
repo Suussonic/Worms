@@ -16,6 +16,7 @@ clock = pygame.time.Clock()
 # États du jeu
 in_menu = True
 in_settings = False
+is_paused = False
 waiting_for_key = False
 key_to_change = None
 
@@ -125,7 +126,8 @@ while running:
                 back_button = pygame.Rect(WIDTH // 2 - 100, HEIGHT - 80, 200, 50)
                 if back_button.collidepoint(mouse_pos):
                     in_settings = False
-                    in_menu = True
+                    if not is_paused:
+                        in_menu = True
         
         # Attente d'une nouvelle touche
         if waiting_for_key and event.type == pygame.KEYDOWN:
@@ -136,6 +138,30 @@ while running:
                 controls[key_to_change] = event.key
                 waiting_for_key = False
                 key_to_change = None
+        
+        # ---------------------------
+        #  MENU PAUSE
+        # ---------------------------
+        # Appuyer sur Échap pendant le jeu pour mettre en pause
+        if not in_menu and not in_settings and not game_over and event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                is_paused = not is_paused
+        
+        # Clics dans le menu pause
+        if is_paused and not in_settings and event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_pos = pygame.mouse.get_pos()
+            continue_button = pygame.Rect(WIDTH // 2 - 150, HEIGHT // 2 - 70, 300, 60)
+            settings_button = pygame.Rect(WIDTH // 2 - 150, HEIGHT // 2 + 10, 300, 60)
+            quit_button = pygame.Rect(WIDTH // 2 - 150, HEIGHT // 2 + 90, 300, 60)
+            
+            if continue_button.collidepoint(mouse_pos):
+                is_paused = False
+            elif settings_button.collidepoint(mouse_pos):
+                in_settings = True
+            elif quit_button.collidepoint(mouse_pos):
+                is_paused = False
+                game_over = False
+                in_menu = True
 
         # Clic sur le bouton REJOUER
         if game_over and event.type == pygame.MOUSEBUTTONDOWN:
@@ -201,7 +227,7 @@ while running:
     # ---------------------------
     #  MISE À JOUR DU JEU
     # ---------------------------
-    if not game_over and not in_menu and not in_settings:
+    if not game_over and not in_menu and not in_settings and not is_paused:
 
         # Charge de la puissance pendant que la touche est maintenue
         if is_charging:
@@ -328,6 +354,26 @@ while running:
         # Ecran de fin
         if game_over:
             UI.draw_game_over(screen, WIDTH, HEIGHT, winner)
+        
+        # Menu pause par-dessus le jeu
+        if is_paused and not in_settings:
+            UI.draw_pause_menu(screen, WIDTH, HEIGHT)
+        
+        # Écran de settings depuis la pause
+        if is_paused and in_settings:
+            if waiting_for_key:
+                UI.draw_settings(screen, WIDTH, HEIGHT, controls)
+                control_labels = {
+                    'left': 'Déplacer à gauche',
+                    'right': 'Déplacer à droite',
+                    'jump': 'Sauter',
+                    'aim_up': 'Angle vers le haut',
+                    'aim_down': 'Angle vers le bas',
+                    'shoot': 'Tirer'
+                }
+                UI.draw_key_prompt(screen, WIDTH, HEIGHT, control_labels[key_to_change])
+            else:
+                UI.draw_settings(screen, WIDTH, HEIGHT, controls)
 
     pygame.display.update()
     clock.tick(60)
