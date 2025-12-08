@@ -1,4 +1,5 @@
 import pygame
+import os
 
 class Worm:
     def __init__(self, x, y, width, height, name="Worm"):
@@ -27,6 +28,20 @@ class Worm:
         self.selected_weapon = "rocket"  # "rocket" ou "grenade"
         self.air_friction_enabled = False
 
+        # --- GESTION DU SPRITE ---
+        self.facing_right = True
+        self.image = None
+        image_path = "worm.png"
+        
+        if os.path.exists(image_path):
+            try:
+                original_image = pygame.image.load(image_path).convert_alpha()
+                self.image = pygame.transform.scale(original_image, (width, height))
+            except Exception as e:
+                print(f"Erreur lors du chargement de l'image du ver : {e}")
+        else:
+            print(f"Image '{image_path}' non trouvée. Utilisation du rectangle par défaut.")
+
     def handle_input(self, controls=None):
         keys = pygame.key.get_pressed()
         
@@ -41,8 +56,10 @@ class Worm:
         # Gauche / Droite
         if keys[controls['left']]:
             self.velocity.x = -self.SPEED
+            self.facing_right = False
         elif keys[controls['right']]:
             self.velocity.x = self.SPEED
+            self.facing_right = True
         else:
             self.velocity.x = 0
 
@@ -128,6 +145,19 @@ class Worm:
     def is_alive(self):
         return self.hp > 0
     
+    def draw(self, screen):
+        """Affiche le ver (sprite ou rectangle)"""
+        if self.image:
+            if self.facing_right:
+                screen.blit(self.image, self.rect)
+            else:
+                screen.blit(pygame.transform.flip(self.image, True, False), self.rect)
+        else:
+            pygame.draw.rect(screen, (0, 255, 0), self.rect)
+            
+        # On appelle draw_hp pour afficher la vie au-dessus
+        self.draw_hp(screen)
+
     def draw_hp(self, screen):
         # Afficher le nom et les PV au-dessus du personnage
         font = pygame.font.Font(None, 22)
