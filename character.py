@@ -31,7 +31,7 @@ class Worm:
         # --- GESTION DU SPRITE ---
         self.facing_right = True
         self.image = None
-        image_path = "worm.png"
+        image_path = "image/worm.png"
         
         if os.path.exists(image_path):
             try:
