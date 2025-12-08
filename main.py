@@ -15,10 +15,15 @@ clock = pygame.time.Clock()
 
 # États du jeu
 in_menu = True
+in_game_setup = False
 in_settings = False
 is_paused = False
 waiting_for_key = False
 key_to_change = None
+
+# Configuration de partie
+num_players = 2
+worms_per_player = 1
 
 # Contrôles par défaut
 controls = {
@@ -34,8 +39,11 @@ controls = {
 game_over = False
 winner = None
 
-# "p1" = joueur 1 (gauche), "p2" = joueur 2 (droite)
-current_turn = "p1"
+# Gestion des joueurs et vers
+players_worms = {}  # Dictionnaire: {"p1": [worm1, worm2, ...], "p2": [...], ...}
+current_player_index = 0  # Index du joueur actuel
+current_worm_index = {}  # Index du ver actuel pour chaque joueur
+player_names = []  # Liste des noms de joueurs ("p1", "p2", ...)
 
 # Gestion du tir
 charging_power = 0
@@ -44,35 +52,77 @@ is_charging = False
 # Liste des projectiles
 projectiles = []
 
-# Dernier joueur qui a tiré ("p1" ou "p2")
+# Dernier joueur qui a tiré
 last_shooter = None
 
 
 def init_game():
     """Réinitialise la partie"""
-    global terrain, mon_ver, ennemi, projectiles
+    global terrain, players_worms, projectiles, player_names
     global charging_power, is_charging, game_over, winner
-    global current_turn, last_shooter
+    global current_player_index, current_worm_index, last_shooter
 
     terrain = Terrain(WIDTH, HEIGHT)
-
-    # Joueur 1 (gauche)
-    mon_ver = Worm(100, 100, 20, 40)
-
-    # Joueur 2 (droite) : aussi un Worm
-    ennemi = Worm(WIDTH - 120, 100, 20, 40)
-
+    
+    # Créer les joueurs et leurs vers
+    players_worms = {}
+    player_names = [f"p{i+1}" for i in range(num_players)]
+    current_worm_index = {}
+    
+    # Espacement pour les vers
+    spacing_x = WIDTH // (num_players + 1)
+    
+    for i, player_name in enumerate(player_names):
+        players_worms[player_name] = []
+        current_worm_index[player_name] = 0
+        
+        # Créer les vers pour ce joueur
+        for j in range(worms_per_player):
+            x_pos = spacing_x * (i + 1) + (j * 30) - (worms_per_player * 15)
+            y_pos = 100
+            worm = Worm(x_pos, y_pos, 20, 40)
+            players_worms[player_name].append(worm)
+    
     projectiles = []
     charging_power = 0
     is_charging = False
     game_over = False
     winner = None
-
-    current_turn = "p1"
+    current_player_index = 0
     last_shooter = None
 
-    print("Tour du joueur 1")
+    print(f"Tour du joueur {player_names[0]}")
 
+
+def get_current_player():
+    """Retourne le nom du joueur actuel"""
+    return player_names[current_player_index]
+
+def get_current_worm():
+    """Retourne le ver actif du joueur actuel"""
+    player = get_current_player()
+    worm_idx = current_worm_index[player]
+    return players_worms[player][worm_idx]
+
+def get_all_alive_worms():
+    """Retourne tous les vers vivants"""
+    alive_worms = []
+    for player_worms in players_worms.values():
+        alive_worms.extend([w for w in player_worms if w.is_alive()])
+    return alive_worms
+
+def next_turn():
+    """Passe au tour suivant avec rotation du ver"""
+    global current_player_index, current_worm_index
+    
+    # Passer au joueur suivant
+    current_player_index = (current_player_index + 1) % len(player_names)
+    
+    # Faire tourner le ver du joueur actuel
+    player = get_current_player()
+    current_worm_index[player] = (current_worm_index[player] + 1) % len(players_worms[player])
+    
+    print(f"Tour du joueur {player} - Ver {current_worm_index[player] + 1}")
 
 trajectory_calc = TrajectoryCalculator(gravity=0.5)
 
@@ -96,12 +146,37 @@ while running:
             
             if play_button.collidepoint(mouse_pos):
                 in_menu = False
-                init_game()
+                in_game_setup = True
             elif settings_button.collidepoint(mouse_pos):
                 in_settings = True
                 in_menu = False
             elif quit_button.collidepoint(mouse_pos):
                 running = False
+        
+        # ---------------------------
+        #  ÉCRAN DE CONFIGURATION
+        # ---------------------------
+        if in_game_setup and event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_pos = pygame.mouse.get_pos()
+            
+            # Calculer les positions des boutons
+            minus_players = pygame.Rect(WIDTH // 2 - 100, 220, 50, 50)
+            plus_players = pygame.Rect(WIDTH // 2 + 50, 220, 50, 50)
+            minus_worms = pygame.Rect(WIDTH // 2 - 100, 370, 50, 50)
+            plus_worms = pygame.Rect(WIDTH // 2 + 50, 370, 50, 50)
+            start_button = pygame.Rect(WIDTH // 2 - 120, HEIGHT - 100, 240, 60)
+            
+            if minus_players.collidepoint(mouse_pos) and num_players > 2:
+                num_players -= 1
+            elif plus_players.collidepoint(mouse_pos):
+                num_players += 1
+            elif minus_worms.collidepoint(mouse_pos) and worms_per_player > 1:
+                worms_per_player -= 1
+            elif plus_worms.collidepoint(mouse_pos):
+                worms_per_player += 1
+            elif start_button.collidepoint(mouse_pos):
+                in_game_setup = False
+                init_game()
         
         # ---------------------------
         #  ÉCRAN SETTINGS
@@ -143,7 +218,7 @@ while running:
         #  MENU PAUSE
         # ---------------------------
         # Appuyer sur Échap pendant le jeu pour mettre en pause
-        if not in_menu and not in_settings and not game_over and event.type == pygame.KEYDOWN:
+        if not in_menu and not in_game_setup and not in_settings and not game_over and event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 is_paused = not is_paused
         
@@ -173,20 +248,16 @@ while running:
         # ---------------------------
         #  GESTION DES TOUCHES
         # ---------------------------
-        if not game_over and not in_menu and not in_settings and event.type == pygame.KEYDOWN:
+        if not game_over and not in_menu and not in_game_setup and not in_settings and event.type == pygame.KEYDOWN:
 
             # Changement d'angle (touches configurables)
             if event.key == controls['aim_up']:
-                if current_turn == "p1":
-                    mon_ver.aim_angle = min(mon_ver.aim_angle + 5, 90)
-                else:
-                    ennemi.aim_angle = min(ennemi.aim_angle + 5, 90)
+                current_worm = get_current_worm()
+                current_worm.aim_angle = min(current_worm.aim_angle + 5, 90)
 
             elif event.key == controls['aim_down']:
-                if current_turn == "p1":
-                    mon_ver.aim_angle = max(mon_ver.aim_angle - 5, -180)
-                else:
-                    ennemi.aim_angle = max(ennemi.aim_angle - 5, -180)
+                current_worm = get_current_worm()
+                current_worm.aim_angle = max(current_worm.aim_angle - 5, -180)
 
             # Début de la charge du tir (touche configurable)
             elif event.key == controls['shoot']:
@@ -196,29 +267,20 @@ while running:
                     charging_power = 0
 
         # Relâchement des touches
-        if not game_over and not in_menu and not in_settings and event.type == pygame.KEYUP:
+        if not game_over and not in_menu and not in_game_setup and not in_settings and event.type == pygame.KEYUP:
             # Tir quand on relâche la touche de tir
             if event.key == controls['shoot'] and is_charging and len(projectiles) == 0:
-                if current_turn == "p1":
-                    # Tir du joueur 1
-                    projectile = Projectile(
-                        mon_ver.rect.centerx,
-                        mon_ver.rect.centery,
-                        mon_ver.aim_angle,
-                        charging_power,
-                        owner="p1"
-                    )
-                    last_shooter = "p1"
-                else:
-                    # Tir du joueur 2
-                    projectile = Projectile(
-                        ennemi.rect.centerx,
-                        ennemi.rect.centery,
-                        ennemi.aim_angle,
-                        charging_power,
-                        owner="p2"
-                    )
-                    last_shooter = "p2"
+                current_worm = get_current_worm()
+                current_player = get_current_player()
+                
+                projectile = Projectile(
+                    current_worm.rect.centerx,
+                    current_worm.rect.centery,
+                    current_worm.aim_angle,
+                    charging_power,
+                    owner=current_player
+                )
+                last_shooter = current_player
 
                 projectiles.append(projectile)
                 is_charging = False
@@ -227,30 +289,39 @@ while running:
     # ---------------------------
     #  MISE À JOUR DU JEU
     # ---------------------------
-    if not game_over and not in_menu and not in_settings and not is_paused:
+    if not game_over and not in_menu and not in_game_setup and not in_settings and not is_paused:
 
         # Charge de la puissance pendant que la touche est maintenue
         if is_charging:
             charging_power = min(charging_power + 0.2, 20)
 
-        # Déplacement du joueur dont c'est le tour
+        # Déplacement du ver actif
         if len(projectiles) == 0:
-            if current_turn == "p1":
-                mon_ver.handle_input(controls)
+            current_worm = get_current_worm()
+            current_worm.handle_input(controls)
+
+        # Mise à jour de tous les vers (gravité, collisions, etc.)
+        for player_worms_list in players_worms.values():
+            for worm in player_worms_list:
+                worm.update(HEIGHT, terrain)
+
+        # Vérifier si une équipe est éliminée
+        alive_by_player = {}
+        for player, worms_list in players_worms.items():
+            alive_by_player[player] = sum(1 for w in worms_list if w.is_alive())
+        
+        # Compter combien d'équipes ont encore des vers vivants
+        teams_alive = sum(1 for count in alive_by_player.values() if count > 0)
+        
+        if teams_alive <= 1:
+            game_over = True
+            # Trouver le gagnant
+            for player, count in alive_by_player.items():
+                if count > 0:
+                    winner = player
+                    break
             else:
-                ennemi.handle_input(controls)
-
-        # Mise à jour des deux vers (gravité, collisions, etc.)
-        mon_ver.update(HEIGHT, terrain)
-        ennemi.update(HEIGHT, terrain)
-
-        # Vérifier si l'un des deux est mort
-        if not ennemi.is_alive():
-            game_over = True
-            winner = "player"
-        elif not mon_ver.is_alive():
-            game_over = True
-            winner = "enemy"
+                winner = "draw"
 
     # ---------------------------
     #  MISE À JOUR DES PROJECTILES
@@ -264,21 +335,22 @@ while running:
             projectiles.remove(projectile)
             continue
 
-        # Collision selon le joueur qui a tiré
-        if projectile.owner == "p1":
-            # Tir du joueur 1 → peut toucher le joueur 2
-            if ennemi.is_alive() and projectile.check_collision(ennemi.rect):
-                ennemi.take_damage(20)
-                projectiles.remove(projectile)
-                print("Joueur 2 touché !")
-                continue
-        elif projectile.owner == "p2":
-            # Tir du joueur 2 → peut toucher le joueur 1
-            if mon_ver.is_alive() and projectile.check_collision(mon_ver.rect):
-                mon_ver.take_damage(20)
-                projectiles.remove(projectile)
-                print("Joueur 1 touché !")
-                continue
+        # Collision avec les vers ennemis
+        hit = False
+        for player, worms_list in players_worms.items():
+            if player != projectile.owner:  # Ne pas toucher ses propres vers
+                for worm in worms_list:
+                    if worm.is_alive() and projectile.check_collision(worm.rect):
+                        worm.take_damage(20)
+                        terrain.create_crater(projectile.x, projectile.y, radius=30)
+                        projectiles.remove(projectile)
+                        print(f"Ver du joueur {player} touché !")
+                        hit = True
+                        break
+            if hit:
+                break
+        if hit:
+            continue
 
         # Projectile hors écran
         if projectile.is_out_of_bounds(WIDTH, HEIGHT):
@@ -288,12 +360,7 @@ while running:
     #  CHANGEMENT DE TOUR
     # ---------------------------
     if not game_over and len(projectiles) == 0 and last_shooter is not None:
-        if last_shooter == "p1" and current_turn == "p1":
-            current_turn = "p2"
-            print("Tour du joueur 2")
-        elif last_shooter == "p2" and current_turn == "p2":
-            current_turn = "p1"
-            print("Tour du joueur 1")
+        next_turn()
         last_shooter = None
 
     # ---------------------------
@@ -303,6 +370,10 @@ while running:
     if in_menu:
         # Afficher le menu principal
         UI.draw_menu(screen, WIDTH, HEIGHT)
+    
+    elif in_game_setup:
+        # Afficher l'écran de configuration de partie
+        UI.draw_game_setup(screen, WIDTH, HEIGHT, num_players, worms_per_player)
     
     elif in_settings:
         # Afficher l'écran de paramètres
@@ -329,24 +400,20 @@ while running:
         # Terrain
         terrain.draw(screen)
 
-        # Joueur 1 (vert) et Joueur 2 (rouge via UI.draw_enemy)
-        UI.draw_player(screen, mon_ver)
-        UI.draw_player(screen, ennemi)
-
-        # Ligne de visée + HUD du joueur dont c'est le tour
-        if current_turn == "p1":
-            UI.draw_aim_line(screen, mon_ver)
-            UI.draw_hud(screen, mon_ver, charging_power)
-        else:
-            UI.draw_aim_line(screen, ennemi)
-            UI.draw_hud(screen, ennemi, charging_power)
+        # Afficher tous les vers de tous les joueurs
+        for player, worms_list in players_worms.items():
+            for worm in worms_list:
+                if worm.is_alive():
+                    UI.draw_player(screen, worm)
+        
+        # Ligne de visée + HUD du ver actif
+        current_worm = get_current_worm()
+        UI.draw_aim_line(screen, current_worm)
+        UI.draw_hud(screen, current_worm, charging_power)
 
         # Trajectoire prévisionnelle si on charge un tir
         if is_charging:
-            if current_turn == "p1":
-                UI.draw_trajectory(screen, trajectory_calc, mon_ver, charging_power)
-            else:
-                UI.draw_trajectory(screen, trajectory_calc, ennemi, charging_power)
+            UI.draw_trajectory(screen, trajectory_calc, current_worm, charging_power)
 
         # Dessiner les projectiles
         UI.draw_projectiles(screen, projectiles)

@@ -125,6 +125,78 @@ class UI:
         screen.blit(cancel_text, cancel_rect)
     
     @staticmethod
+    def draw_game_setup(screen, width, height, num_players, worms_per_player):
+        """Dessine l'écran de configuration de partie"""
+        screen.fill((20, 20, 40))  # Fond bleu foncé
+        
+        # Titre
+        title_font = pygame.font.Font(None, 80)
+        title = title_font.render("CONFIGURATION", True, (255, 255, 255))
+        title_rect = title.get_rect(center=(width // 2, 80))
+        screen.blit(title, title_rect)
+        
+        label_font = pygame.font.Font(None, 45)
+        value_font = pygame.font.Font(None, 60)
+        button_font = pygame.font.Font(None, 40)
+        
+        # Nombre de joueurs
+        players_label = label_font.render("Nombre de joueurs :", True, (200, 200, 200))
+        screen.blit(players_label, (150, 180))
+        
+        # Boutons - et + pour joueurs
+        minus_players = pygame.Rect(width // 2 - 100, 220, 50, 50)
+        plus_players = pygame.Rect(width // 2 + 50, 220, 50, 50)
+        
+        pygame.draw.rect(screen, (200, 50, 50) if num_players > 2 else (100, 100, 100), minus_players)
+        pygame.draw.rect(screen, (255, 255, 255), minus_players, 2)
+        minus_text = value_font.render("-", True, (255, 255, 255))
+        screen.blit(minus_text, (width // 2 - 88, 218))
+        
+        pygame.draw.rect(screen, (50, 200, 50), plus_players)
+        pygame.draw.rect(screen, (255, 255, 255), plus_players, 2)
+        plus_text = value_font.render("+", True, (255, 255, 255))
+        screen.blit(plus_text, (width // 2 + 60, 218))
+        
+        # Valeur nombre de joueurs
+        players_value = value_font.render(str(num_players), True, (0, 255, 255))
+        players_value_rect = players_value.get_rect(center=(width // 2, 245))
+        screen.blit(players_value, players_value_rect)
+        
+        # Nombre de vers par joueur
+        worms_label = label_font.render("Vers par joueur :", True, (200, 200, 200))
+        screen.blit(worms_label, (150, 330))
+        
+        # Boutons - et + pour vers
+        minus_worms = pygame.Rect(width // 2 - 100, 370, 50, 50)
+        plus_worms = pygame.Rect(width // 2 + 50, 370, 50, 50)
+        
+        pygame.draw.rect(screen, (200, 50, 50) if worms_per_player > 1 else (100, 100, 100), minus_worms)
+        pygame.draw.rect(screen, (255, 255, 255), minus_worms, 2)
+        minus_text2 = value_font.render("-", True, (255, 255, 255))
+        screen.blit(minus_text2, (width // 2 - 88, 368))
+        
+        pygame.draw.rect(screen, (50, 200, 50), plus_worms)
+        pygame.draw.rect(screen, (255, 255, 255), plus_worms, 2)
+        plus_text2 = value_font.render("+", True, (255, 255, 255))
+        screen.blit(plus_text2, (width // 2 + 60, 368))
+        
+        # Valeur nombre de vers
+        worms_value = value_font.render(str(worms_per_player), True, (0, 255, 255))
+        worms_value_rect = worms_value.get_rect(center=(width // 2, 395))
+        screen.blit(worms_value, worms_value_rect)
+        
+        # Bouton Commencer
+        start_button = pygame.Rect(width // 2 - 120, height - 100, 240, 60)
+        pygame.draw.rect(screen, (0, 200, 0), start_button)
+        pygame.draw.rect(screen, (255, 255, 255), start_button, 3)
+        
+        start_text = button_font.render("COMMENCER", True, (255, 255, 255))
+        start_text_rect = start_text.get_rect(center=start_button.center)
+        screen.blit(start_text, start_text_rect)
+        
+        return minus_players, plus_players, minus_worms, plus_worms, start_button
+    
+    @staticmethod
     def draw_pause_menu(screen, width, height):
         """Dessine le menu pause avec 3 boutons"""
         # Overlay semi-transparent
