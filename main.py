@@ -277,17 +277,8 @@ while running:
         # ---------------------------
         if not game_over and not in_menu and not in_game_setup and not in_settings and event.type == pygame.KEYDOWN:
 
-            # Changement d'angle (touches configurables)
-            if event.key == controls['aim_up']:
-                current_worm = get_current_worm()
-                current_worm.aim_angle = min(current_worm.aim_angle + 5, 90)
-
-            elif event.key == controls['aim_down']:
-                current_worm = get_current_worm()
-                current_worm.aim_angle = max(current_worm.aim_angle - 5, -180)
-
             # Début de la charge du tir (touche configurable)
-            elif event.key == controls['shoot']:
+            if event.key == controls['shoot']:
                 # On peut charger seulement si aucun projectile en vol
                 if len(projectiles) == 0:
                     is_charging = True
@@ -321,6 +312,20 @@ while running:
         # Charge de la puissance pendant que la touche est maintenue
         if is_charging:
             charging_power = min(charging_power + 0.2, 20)
+        
+        # Changement d'angle continu (touches maintenues)
+        if len(projectiles) == 0:
+            current_worm = get_current_worm()
+            if current_worm and current_worm.is_alive():
+                keys = pygame.key.get_pressed()
+                
+                # Flèche du bas -> angle monte (inversé)
+                if keys[controls['aim_down']]:
+                    current_worm.aim_angle = min(current_worm.aim_angle + 1, 90)
+                
+                # Flèche du haut -> angle descend (inversé)
+                if keys[controls['aim_up']]:
+                    current_worm.aim_angle = max(current_worm.aim_angle - 1, -180)
 
         # Déplacement du ver actif
         if len(projectiles) == 0:
