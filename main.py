@@ -81,16 +81,14 @@ def init_game():
     player_names = [f"p{i+1}" for i in range(num_players)]
     current_worm_index = {}
     
-    # Espacement pour les vers
-    spacing_x = WIDTH // (num_players + 1)
-    
     for i, player_name in enumerate(player_names):
         players_worms[player_name] = []
         current_worm_index[player_name] = 0
         
         # Créer les vers pour ce joueur
         for j in range(worms_per_player):
-            x_pos = spacing_x * (i + 1) + (j * 30) - (worms_per_player * 15)
+            # Position X aléatoire avec une marge de 50 pixels des bords
+            x_pos = random.randint(50, WIDTH - 50)
             y_pos = 100
             
             # Attribuer un nom aléatoire
