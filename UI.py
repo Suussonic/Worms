@@ -281,8 +281,8 @@ class UI:
                         (end_x, end_y), 3)
     
     @staticmethod
-    def draw_hud(screen, player, charging_power):
-        """Affiche l'angle et la puissance en haut à gauche"""
+    def draw_hud(screen, player, charging_power, time_remaining=None):
+        """Affiche l'angle, la puissance et le timer en haut à gauche"""
         font = pygame.font.Font(None, 36)
         
         angle_text = font.render(f"Angle: {player.aim_angle}°", True, (255, 255, 255))
@@ -290,6 +290,12 @@ class UI:
         
         power_text = font.render(f"Puissance: {int(charging_power)}", True, (255, 255, 255))
         screen.blit(power_text, (10, 50))
+        
+        # Afficher le timer
+        if time_remaining is not None:
+            timer_color = (255, 0, 0) if time_remaining <= 5 else (255, 255, 255)
+            timer_text = font.render(f"Temps: {int(time_remaining)}s", True, timer_color)
+            screen.blit(timer_text, (10, 90))
     
     @staticmethod
     def draw_trajectory(screen, trajectory_calc, player, charging_power):

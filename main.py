@@ -68,12 +68,18 @@ projectiles = []
 # Dernier joueur qui a tiré
 last_shooter = None
 
+# Timer de tour
+turn_time_limit = 20  # Secondes par tour
+turn_start_time = 0  # Temps de début du tour
+time_remaining = turn_time_limit
+
 
 def init_game():
     """Réinitialise la partie"""
     global terrain, players_worms, projectiles, player_names
     global charging_power, is_charging, game_over, winner
     global current_player_index, current_worm_index, last_shooter
+    global turn_start_time, time_remaining
 
     terrain = Terrain(WIDTH, HEIGHT)
     
@@ -124,6 +130,8 @@ def init_game():
     winner = None
     current_player_index = 0
     last_shooter = None
+    turn_start_time = pygame.time.get_ticks()
+    time_remaining = turn_time_limit
 
     print(f"Tour du joueur {player_names[0]}")
 
@@ -159,7 +167,7 @@ def get_all_alive_worms():
 
 def next_turn():
     """Passe au tour suivant avec rotation du ver"""
-    global current_player_index, current_worm_index
+    global current_player_index, current_worm_index, turn_start_time, time_remaining
     
     # Passer au joueur suivant
     current_player_index = (current_player_index + 1) % len(player_names)
@@ -167,6 +175,10 @@ def next_turn():
     # Faire tourner le ver du joueur actuel
     player = get_current_player()
     current_worm_index[player] = (current_worm_index[player] + 1) % len(players_worms[player])
+    
+    # Réinitialiser le timer
+    turn_start_time = pygame.time.get_ticks()
+    time_remaining = turn_time_limit
     
     print(f"Tour du joueur {player} - Ver {current_worm_index[player] + 1}")
 
@@ -333,6 +345,15 @@ while running:
     #  MISE À JOUR DU JEU
     # ---------------------------
     if not game_over and not in_menu and not in_game_setup and not in_settings and not is_paused:
+        
+        # Mise à jour du timer
+        current_time = pygame.time.get_ticks()
+        elapsed_time = (current_time - turn_start_time) / 1000  # Convertir en secondes
+        time_remaining = max(0, turn_time_limit - elapsed_time)
+        
+        # Si le temps est écoulé et aucun projectile en vol, passer au tour suivant
+        if time_remaining <= 0 and len(projectiles) == 0:
+            next_turn()
 
         # Charge de la puissance pendant que la touche est maintenue
         if is_charging:
@@ -505,7 +526,7 @@ while running:
         current_worm = get_current_worm()
         if current_worm and current_worm.is_alive():
             UI.draw_aim_line(screen, current_worm)
-            UI.draw_hud(screen, current_worm, charging_power)
+            UI.draw_hud(screen, current_worm, charging_power, time_remaining)
 
             # Trajectoire prévisionnelle si on charge un tir
             if is_charging:
