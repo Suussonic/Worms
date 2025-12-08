@@ -64,6 +64,18 @@ def init_game():
 
     terrain = Terrain(WIDTH, HEIGHT)
     
+    # Liste des prénoms disponibles
+    import random
+    available_names = [
+        "Mathieu", "Yanis", "Satya", "Raphaël", "Phileas",
+        "Abdel Aziz", "Emma", "Ana", "Tanguy", "Abdoullah",
+        "Thomas", "Titouan", "Robin", "Paul", "Yohan"
+    ]
+    
+    # Mélanger les noms
+    random.shuffle(available_names)
+    name_index = 0
+    
     # Créer les joueurs et leurs vers
     players_worms = {}
     player_names = [f"p{i+1}" for i in range(num_players)]
@@ -80,7 +92,12 @@ def init_game():
         for j in range(worms_per_player):
             x_pos = spacing_x * (i + 1) + (j * 30) - (worms_per_player * 15)
             y_pos = 100
-            worm = Worm(x_pos, y_pos, 20, 40)
+            
+            # Attribuer un nom aléatoire
+            worm_name = available_names[name_index % len(available_names)]
+            name_index += 1
+            
+            worm = Worm(x_pos, y_pos, 20, 40, name=worm_name)
             players_worms[player_name].append(worm)
     
     projectiles = []

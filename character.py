@@ -1,7 +1,7 @@
 import pygame
 
 class Worm:
-    def __init__(self, x, y, width, height):
+    def __init__(self, x, y, width, height, name="Worm"):
         self.rect = pygame.Rect(x, y, width, height)
         
         self.velocity = pygame.math.Vector2(0, 0)
@@ -19,6 +19,9 @@ class Worm:
         # Points de vie
         self.hp = 100
         self.max_hp = 100
+        
+        # Nom du ver
+        self.name = name
 
     def handle_input(self, controls=None):
         keys = pygame.key.get_pressed()
@@ -87,7 +90,14 @@ class Worm:
         return self.hp > 0
     
     def draw_hp(self, screen):
-        # Afficher les PV au-dessus du personnage
-        font = pygame.font.Font(None, 24)
+        # Afficher le nom et les PV au-dessus du personnage
+        font = pygame.font.Font(None, 22)
+        
+        # Afficher le nom à gauche
+        name_text = font.render(self.name, True, (255, 255, 0))
+        screen.blit(name_text, (self.rect.x - 5, self.rect.y - 25))
+        
+        # Afficher les PV à droite du nom
         hp_text = font.render(f"HP: {self.hp}", True, (255, 255, 255))
-        screen.blit(hp_text, (self.rect.x - 5, self.rect.y - 25))
+        name_width = name_text.get_width()
+        screen.blit(hp_text, (self.rect.x - 5 + name_width + 5, self.rect.y - 25))
