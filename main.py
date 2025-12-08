@@ -348,12 +348,13 @@ while running:
                 
                 if current_worm and current_worm.is_alive():
                     menu_x = current_worm.rect.centerx - 100
-                    menu_y = current_worm.rect.top - 120
+                    menu_y = current_worm.rect.top - 140
                     
-                    # Boutons du menu (3 options)
+                    # Boutons du menu (4 options)
                     rocket_button = pygame.Rect(menu_x, menu_y, 200, 30)
                     grenade_button = pygame.Rect(menu_x, menu_y + 35, 200, 30)
                     friction_button = pygame.Rect(menu_x, menu_y + 70, 200, 30)
+                    parachute_button = pygame.Rect(menu_x, menu_y + 105, 200, 30)
                     
                     if rocket_button.collidepoint(mouse_pos):
                         current_worm.selected_weapon = "rocket"
@@ -363,6 +364,8 @@ while running:
                         weapon_menu_open = False
                     elif friction_button.collidepoint(mouse_pos):
                         current_worm.air_friction_enabled = not current_worm.air_friction_enabled
+                    elif parachute_button.collidepoint(mouse_pos):
+                        current_worm.parachute_enabled = not current_worm.parachute_enabled
 
         # ---------------------------
         #  GESTION DES TOUCHES
@@ -645,7 +648,13 @@ while running:
             
             # Menu de sélection d'arme
             if weapon_menu_open:
-                UI.draw_weapon_menu(screen, current_worm, current_worm.selected_weapon, current_worm.air_friction_enabled)
+                UI.draw_weapon_menu(
+            screen,
+            current_worm,
+            current_worm.selected_weapon,
+            current_worm.air_friction_enabled,
+            current_worm.parachute_enabled
+        )
 
         # Dessiner les projectiles
         for projectile in projectiles:

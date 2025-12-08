@@ -1,5 +1,6 @@
 import pygame
 import os
+import math
 
 class Worm:
     def __init__(self, x, y, width, height, name="Worm"):
@@ -27,6 +28,12 @@ class Worm:
         # Arme individuelle (chaque ver a sa propre arme)
         self.selected_weapon = "rocket"  # "rocket" ou "grenade"
         self.air_friction_enabled = False
+
+        # Parachute
+        self.parachute_enabled = False  # activé/désactivé via le menu (TAB)
+        self.parachute_open = False     # parachute actuellement ouvert
+        self.PARACHUTE_GRAVITY_FACTOR = 0.25  # gravité réduite quand le parachute est ouvert
+        self.PARACHUTE_MAX_FALL_SPEED = 3     # vitesse de chute max avec parachute
 
         # --- GESTION DU SPRITE ---
         self.facing_right = True
@@ -67,16 +74,51 @@ class Worm:
         else:
             self.velocity.x = 0
 
-        # Saut (seulement si on est au sol)
-        if keys[controls['jump']] and self.on_ground:
-            self.jump()
+        # Saut / Parachute
+        if keys[controls['jump']]:
+            if self.on_ground:
+                # Au sol -> saut normal
+                self.jump()
+                # Fermer le parachute au sol
+                self.parachute_open = False
+            else:
+                # En l'air -> tenter d'ouvrir le parachute
+                self.open_parachute()
+
 
     def jump(self):
         self.velocity.y = self.JUMP_FORCE
         self.on_ground = False
 
+    def open_parachute(self):
+        """Ouvre le parachute si possible pendant une chute."""
+        # Conditions :
+        # - le parachute est activé dans le menu (parachute_enabled)
+        # - on n'est pas au sol
+        # - le parachute n'est pas déjà ouvert
+        # - on est en train de tomber (velocity.y > 0)
+        if (
+            self.parachute_enabled
+            and not self.on_ground
+            and not self.parachute_open
+            and self.velocity.y > 0
+        ):
+            self.parachute_open = True
+            # Limiter immédiatement la vitesse de chute
+            if self.velocity.y > self.PARACHUTE_MAX_FALL_SPEED:
+                self.velocity.y = self.PARACHUTE_MAX_FALL_SPEED
+
+
     def update(self, screen_height, terrain=None):
-        self.velocity.y += self.GRAVITY
+                # Gravité (réduite si le parachute est ouvert)
+        if self.parachute_open:
+            self.velocity.y += self.GRAVITY * self.PARACHUTE_GRAVITY_FACTOR
+            # Limiter la vitesse de chute
+            if self.velocity.y > self.PARACHUTE_MAX_FALL_SPEED:
+                self.velocity.y = self.PARACHUTE_MAX_FALL_SPEED
+        else:
+            self.velocity.y += self.GRAVITY
+
 
         # Sauvegarder la position avant déplacement
         old_x = self.rect.x
@@ -130,6 +172,8 @@ class Worm:
                         self.rect.y -= 1
                     self.velocity.y = 0
                     self.on_ground = True
+                    # Fermer le parachute quand on touche le sol
+                    self.parachute_open = False
                     break
         else:
             # Fallback: collision avec le bord de l'écran
@@ -137,8 +181,8 @@ class Worm:
                 self.rect.bottom = screen_height
                 self.velocity.y = 0
                 self.on_ground = True
-            else:
-                self.on_ground = False
+                # Fermer le parachute quand on touche le sol
+                self.parachute_open = False
 
     def get_position(self):
         return (self.rect.x, self.rect.y)
@@ -161,6 +205,32 @@ class Worm:
             
         # On appelle draw_hp pour afficher la vie au-dessus
         self.draw_hp(screen)
+
+        # Dessiner un petit parachute au-dessus du ver si ouvert
+        if self.parachute_open:
+            top_x = self.rect.centerx
+            top_y = self.rect.top - 15
+            width = 20
+
+            # Corde
+            pygame.draw.line(
+                screen,
+                (255, 255, 255),
+                (self.rect.centerx, self.rect.top),
+                (top_x, top_y),
+                2
+            )
+
+            # Voile (demi-cercle)
+            pygame.draw.arc(
+                screen,
+                (255, 255, 255),
+                (top_x - width // 2, top_y - 10, width, 20),
+                math.pi,
+                2 * math.pi,
+                2
+            )
+
 
     def draw_hp(self, screen):
         # Afficher le nom et les PV au-dessus du personnage

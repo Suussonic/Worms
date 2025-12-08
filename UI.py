@@ -348,10 +348,10 @@ class UI:
         return button_rect  # Retourner le rect du bouton pour détecter les clics
     
     @staticmethod
-    def draw_weapon_menu(screen, worm, selected_weapon, air_friction):
+    def draw_weapon_menu(screen, worm, selected_weapon, air_friction, parachute_enabled):
         # Dessine le menu de sélection d'arme au-dessus du ver
         menu_width = 200
-        menu_height = 105
+        menu_height = 140
         menu_x = worm.rect.centerx - menu_width // 2
         menu_y = worm.rect.top - menu_height - 10
         
@@ -396,3 +396,15 @@ class UI:
         friction_text = font.render(f"Frottements: {friction_status}", True, friction_color)
         friction_text_rect = friction_text.get_rect(center=friction_rect.center)
         screen.blit(friction_text, friction_text_rect)
+
+        # Option Parachute
+        parachute_rect = pygame.Rect(menu_x, menu_y + 105, menu_width, 30)
+        pygame.draw.rect(screen, (70, 70, 70), parachute_rect)
+        pygame.draw.rect(screen, (255, 255, 255), parachute_rect, 1)
+
+        parachute_status = "ON" if parachute_enabled else "OFF"
+        parachute_color = (0, 255, 0) if parachute_enabled else (255, 100, 100)
+        parachute_text = font.render(f"Parachute: {parachute_status}", True, parachute_color)
+        parachute_text_rect = parachute_text.get_rect(center=parachute_rect.center)
+        screen.blit(parachute_text, parachute_text_rect)
+
