@@ -53,6 +53,10 @@ class Worm:
     def update(self, screen_height, terrain=None):
         self.velocity.y += self.GRAVITY
 
+        # Sauvegarder la position avant déplacement
+        old_x = self.rect.x
+        old_y = self.rect.y
+
         self.rect.x += self.velocity.x
         self.rect.y += self.velocity.y
         
@@ -62,6 +66,24 @@ class Worm:
 
         # Gestion collision avec le terrain
         if terrain:
+            # Vérifier les collisions latérales (gauche/droite)
+            collision_lateral = False
+            for y_offset in range(0, self.rect.height, 5):
+                check_y = self.rect.top + y_offset
+                # Vérifier côté gauche
+                if terrain.is_solid(self.rect.left, check_y):
+                    collision_lateral = True
+                    break
+                # Vérifier côté droit
+                if terrain.is_solid(self.rect.right, check_y):
+                    collision_lateral = True
+                    break
+            
+            # Si collision latérale, annuler le déplacement horizontal
+            if collision_lateral:
+                self.rect.x = old_x
+                self.velocity.x = 0
+            
             # Vérifier les collisions avec le terrain en dessous
             self.on_ground = False
             for x_offset in range(0, self.rect.width, 5):  # Vérifier plusieurs points
