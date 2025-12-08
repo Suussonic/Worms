@@ -248,12 +248,6 @@ class UI:
         player.draw_hp(screen)
     
     @staticmethod
-    def draw_enemy(screen, enemy):
-        """Dessine l'ennemi s'il est vivant"""
-        if enemy.is_alive():
-            enemy.draw(screen)
-    
-    @staticmethod
     def draw_aim_line(screen, player, length=50):
         """Dessine la ligne de visée du joueur"""
         angle_rad = math.radians(player.aim_angle)
