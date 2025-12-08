@@ -17,31 +17,34 @@ class Terrain:
         self.generate_terrain()
     
     def generate_terrain(self):
-        """Génère un terrain avec des collines aléatoires"""
+        """Génère un terrain avec des blocs carrés aléatoires"""
         import random
         
         # Remplir le fond
         self.surface.fill((0, 0, 0))
         
-        # Créer des points pour les collines
-        points = []
-        ground_height = self.height // 3  # Hauteur de base du terrain
+        # Taille des blocs
+        block_size = 20
         
-        # Générer des points pour créer des collines
-        num_points = 20
-        for i in range(num_points + 1):
-            x = (self.width // num_points) * i
+        # Calculer le nombre de colonnes
+        num_columns = self.width // block_size
+        
+        # Générer la hauteur pour chaque colonne
+        ground_base = self.height // 3  # Hauteur de base du terrain
+        
+        for col in range(num_columns):
             # Variation aléatoire pour créer des collines
-            variation = random.randint(-50, 50)
-            y = self.height - ground_height + variation
-            y = max(self.height // 2, min(self.height, y))  # Limiter la hauteur
-            points.append((x, y))
-        
-        # Dessiner le terrain
-        if len(points) > 2:
-            # Créer un polygone pour le terrain
-            terrain_points = points + [(self.width, self.height), (0, self.height)]
-            pygame.draw.polygon(self.surface, (139, 90, 43), terrain_points)  # Couleur marron
+            variation = random.randint(-3, 3)  # Variation en nombre de blocs
+            height_in_blocks = (ground_base // block_size) + variation
+            height_in_blocks = max(5, min(height_in_blocks, self.height // block_size))  # Limiter
+            
+            # Dessiner une colonne de blocs
+            x = col * block_size
+            for row in range(height_in_blocks):
+                y = self.height - (row + 1) * block_size
+                # Dessiner le bloc avec une bordure pour voir les carrés
+                pygame.draw.rect(self.surface, (139, 90, 43), (x, y, block_size, block_size))
+                pygame.draw.rect(self.surface, (110, 70, 30), (x, y, block_size, block_size), 1)  # Bordure
         
         # Mettre à jour le masque de collision
         self.update_mask()
