@@ -1,257 +1,292 @@
-# Worms - Jeu de Tir Balistique
+# Worms - Jeu de Tir Balistique Multi-joueurs
 
-## 📖 Description du Projet
+## Description du Projet
 
-Ce projet est un clone simplifié du célèbre jeu **Worms**, développé en Python avec Pygame. Le joueur contrôle un personnage (ver vert) qui doit éliminer un ennemi (ver rouge) en utilisant des projectiles balistiques. Le jeu intègre des calculs de trajectoire réalistes basés sur la physique, un terrain destructible, et un système de combat tactique.
+Clone du célèbre jeu **Worms** développé en Python avec Pygame. Les joueurs contrôlent des vers et doivent éliminer les équipes adverses en utilisant des projectiles balistiques. Le jeu intègre physique réaliste, terrain destructible, système multi-joueurs et plusieurs armes.
 
-### Objectifs pédagogiques
-- Simuler des trajectoires balistiques avec et sans frottements de l'air
-- Implémenter un terrain destructible avec détection de collision
-- Gérer la physique du jeu (gravité, vélocité, forces)
-- Créer une interface utilisateur interactive
+### Caractéristiques
+- Mode multi-joueurs (2+ joueurs, 1+ vers par joueur)
+- Trois armes : Roquette, Grenade avec rebonds, Parachute
+- Terrain destructible avec eau mortelle
+- Physique réaliste avec frottements d'air optionnels
+- Interface complète : menus, configuration, paramètres, pause
+- Système de tours avec timer (20 secondes)
+- Personnalisation des touches de contrôle
 
 ---
 
-## 🎮 Contrôles du Jeu
+## Contrôles du Jeu
 
 ### Menu principal
-- **Clic sur "JOUER"** : Démarrer une nouvelle partie
+- **JOUER** : Accéder à la configuration de partie
+- **PARAMETRES** : Personnaliser les touches
+- **QUITTER** : Fermer le jeu
 
-### Pendant le jeu
-- **← / →** ou **Q / D** : Déplacer le personnage
+### Configuration de partie
+- **Boutons +/-** : Ajuster nombre de joueurs (minimum 2)
+- **Boutons +/-** : Ajuster nombre de vers par joueur (minimum 1)
+- **Flèches < >** : Sélectionner un terrain (aléatoire ou prédéfini)
+- **COMMENCER** : Lancer la partie
+
+### En jeu
+- **Flèches Gauche/Droite** : Déplacer le ver actif
 - **Espace** : Sauter
-- **↑ / ↓** : Ajuster l'angle de tir (de -90° à 90°)
-- **Maintenir Entrée** : Charger la puissance du tir (0 à 20)
+- **Flèches Haut/Bas** : Ajuster l'angle de tir (-180° à 90°)
+- **Maintenir Entrée** : Charger la puissance (0 à 20)
 - **Relâcher Entrée** : Tirer le projectile
+- **Clic droit ou TAB** : Ouvrir le menu de sélection d'arme
+- **ESC** : Mettre en pause
+
+### Menu d'arme
+- **Roquette** : Tir direct, cratère moyen (30px), dégâts 20 HP
+- **Grenade** : Rebondit, explose après 5s ou 10 rebonds, cratère 40px, dégâts jusqu'à 50 HP
+- **Frottements d'air** : Activer/désactiver (coefficient 0.98)
+
+### Menu pause
+- **CONTINUER** : Reprendre la partie
+- **PARAMETRES** : Modifier les touches
+- **QUITTER** : Retour au menu principal
 
 ### Écran de fin
-- **Clic sur "REJOUER"** : Recommencer une nouvelle partie avec un nouveau terrain
+- **REJOUER** : Relancer une partie avec le même terrain
 
 ---
 
-## 📁 Structure des Fichiers
+## Structure du Code
 
 ### Fichiers principaux
 
 #### `main.py`
-**Rôle** : Boucle principale du jeu et gestion des événements
-- Initialisation de Pygame et de la fenêtre
-- Gestion des états du jeu (menu, en cours, game over)
-- Boucle d'événements et mise à jour des entités
-- Détection des collisions projectile-terrain et projectile-ennemi
+Boucle principale et logique de jeu
+- Initialisation Pygame, fenêtre 1200x800, 60 FPS
+- États : menu, configuration, jeu, pause, game over
+- Système multi-joueurs avec rotation des tours (20s par tour)
+- Gestion projectiles, collisions, dégâts
+- Timer visible avec alerte rouge (< 5 secondes)
+- Système de parachute partagé par joueur
 
 #### `UI.py`
-**Rôle** : Interface utilisateur et affichage graphique
-- `draw_menu()` : Écran de démarrage avec bouton "JOUER"
-- `draw_hud()` : Affichage de l'angle et de la puissance
-- `draw_aim_line()` : Ligne de visée jaune
+Interface utilisateur et rendu graphique
+- `draw_menu()` : Menu principal avec 3 boutons
+- `draw_game_setup()` : Configuration joueurs/vers/terrain
+- `draw_settings()` : Personnalisation des touches
+- `draw_pause_menu()` : Menu pause
+- `draw_hud()` : Affichage angle, puissance, timer
+- `draw_aim_line()` : Ligne de visée
 - `draw_trajectory()` : Trajectoire prédite en pointillés
-- `draw_game_over()` : Écran de victoire/défaite avec bouton "REJOUER"
+- `draw_weapon_menu()` : Menu de sélection d'arme
+- `draw_game_over()` : Écran de victoire
 
 ### Fichiers de gameplay
 
 #### `character.py`
-**Rôle** : Classe `Worm` représentant le joueur
-```python
-class Worm:
-    def __init__(self, x, y, width, height):
-        self.velocity = pygame.math.Vector2(0, 0)
-        self.GRAVITY = 0.8
-        self.JUMP_FORCE = -15
-        self.hp = 100
-        self.aim_angle = 0
-```
-- Gestion du déplacement horizontal et du saut
-- Application de la gravité et collision avec le terrain
-- Système de points de vie et de visée
-
-#### `enemy.py`
-**Rôle** : Classe `Enemy` représentant l'adversaire
-- Même système physique que le joueur (gravité, collision)
-- Affichage des HP au-dessus du personnage
-- Méthodes `take_damage()` et `is_alive()`
+Classe `Worm` - Ver de jeu
+- Physique : Déplacement, saut (force -8), gravité (0.8)
+- Collision terrain avec détection pixel-perfect
+- Système HP : 100 max, mort dans l'eau instantanée
+- Visée : Angle -180° à 90°, puissance 0-20
+- Armes : Sélection roquette/grenade par ver
+- Sprite : Chargement image avec flip horizontal automatique
+- Nom aléatoire parmi 15 prénoms
 
 #### `gun.py`
-**Rôle** : Classe `Projectile` pour les munitions
-```python
-class Projectile:
-    def __init__(self, x, y, angle, power):
-        angle_rad = math.radians(angle)
-        self.velocity_x = power * math.cos(angle_rad)
-        self.velocity_y = power * math.sin(angle_rad)
-        self.GRAVITY = 0.5
-```
-- Calcul des composantes de vitesse à partir de l'angle et de la puissance
-- Application de la gravité à chaque frame
-- Détection de collision avec rectangles
+Classe `Projectile` - Roquette
+- Vitesse initiale : vx = P×cos(θ), vy = P×sin(θ)
+- Gravité : 0.5 par frame
+- Frottements d'air optionnels : coefficient 0.98
+- Rayon : 5 pixels
+- Collision avec terrain et vers
+- Cratère : 30 pixels de rayon
+
+#### `grenade.py`
+Classe `Grenade` - Grenade avec rebonds
+- Vitesse : 60% de la roquette
+- Timer : 5 secondes avant explosion
+- Rebonds : Amortissement 60%, friction sol 80%
+- Explose si : timer écoulé, 10 rebonds, vitesse < 0.5
+- Pause/reprise du timer
+- Affichage temps restant
+- Cratère : 40 pixels, dégâts max 50 HP (formule quadratique)
 
 ### Fichiers de physique
 
 #### `trajectory.py`
-**Rôle** : Calcul et affichage des trajectoires prédites
-```python
-def calculate_trajectory_points(self, start_x, start_y, angle, power):
-    angle_rad = math.radians(angle)
-    vx = power * math.cos(angle_rad)
-    vy = power * math.sin(angle_rad)
-    
-    for i in range(max_points):
-        x += vx
-        y += vy
-        vy += self.gravity  # Accélération gravitationnelle
-```
-- Simulation frame par frame de la trajectoire
-- Affichage en pointillés pour prévisualiser le tir
+Classe `TrajectoryCalculator` - Calcul de trajectoires
+- Simulation itérative frame par frame
+- Support grenades : vitesse réduite à 60%
+- Support frottements d'air : coefficient 0.98
+- Affichage pointillés : 1 point tous les 5
+- Limite : 100 points ou sortie d'écran (y > 800)
+- Couleur différente selon arme (rouge/vert)
 
 #### `terrain.py`
-**Rôle** : Génération et gestion du terrain destructible
-```python
-class Terrain:
-    def __init__(self, width, height):
-        self.mask = np.zeros((width, height), dtype=bool)  # Masque de collision
-        self.generate_terrain()  # Génération procédurale
-    
-    def create_crater(self, x, y, radius=30):
-        # Créer un cercle de destruction
-        for dx in range(-radius, radius + 1):
-            for dy in range(-radius, radius + 1):
-                if dx*dx + dy*dy <= radius*radius:
-                    self.mask[px, py] = False
-```
-- Génération aléatoire de collines avec polygones
-- Masque booléen pour la détection de collision pixel-perfect
-- Destruction circulaire du terrain lors des impacts
+Classe `Terrain` - Terrain destructible
+- Génération procédurale par blocs 20x20 pixels
+- Hauteurs lissées : variation ±1 bloc entre colonnes
+- Limite hauteur : 8 à 25 blocs (espace en haut/bas)
+- Eau mortelle : 2 blocs en bas (mort instantanée)
+- Chargement fichiers .txt : T=terre, W=eau, #=vide
+- Masque collision : numpy array booléen (width × height)
+- Masque eau séparé du masque terrain
+- Cratères circulaires : formule dx²+dy² ≤ r²
 
 ---
 
-## 🔬 Équations Mathématiques Importantes
+## Formules Mathématiques
 
-### 1. Décomposition de la vitesse initiale
-
-Lorsqu'un projectile est tiré avec un angle θ et une puissance P :
-
+### 1. Vitesse initiale du projectile
 ```
 vx = P × cos(θ)
 vy = P × sin(θ)
 ```
-
-**Application dans le code** (`gun.py`) :
+Code (`gun.py`) :
 ```python
 angle_rad = math.radians(angle)
 self.velocity_x = power * math.cos(angle_rad)
 self.velocity_y = power * math.sin(angle_rad)
 ```
 
-### 2. Mouvement balistique avec gravité
-
-À chaque frame (dt), la position et la vitesse sont mises à jour :
-
+### 2. Mouvement avec gravité
 ```
-vy(t+dt) = vy(t) + g × dt
-x(t+dt) = x(t) + vx × dt
-y(t+dt) = y(t) + vy × dt
+vy(t+1) = vy(t) + g
+x(t+1) = x(t) + vx
+y(t+1) = y(t) + vy
 ```
+Gravité : g = 0.5 (projectiles) ou 0.8 (vers)
 
-Où g = 0.5 ou 0.8 selon l'objet (constante de gravité)
-
-**Application dans le code** (`gun.py`, `character.py`) :
+Code (`gun.py`, `character.py`) :
 ```python
-def update(self):
-    self.velocity_y += self.GRAVITY  # Accélération
-    self.x += self.velocity_x         # Déplacement horizontal
-    self.y += self.velocity_y         # Déplacement vertical
+self.velocity_y += self.GRAVITY
+self.x += self.velocity_x
+self.y += self.velocity_y
 ```
 
-### 3. Équation de la trajectoire parabolique
-
-Pour un projectile sans frottements, la trajectoire suit :
-
+### 3. Frottements d'air
 ```
-y = y₀ + x×tan(θ) - (g×x²)/(2×v₀²×cos²(θ))
+vx(t+1) = vx(t) × k
+vy(t+1) = (vy(t) + g) × k
 ```
+Coefficient k = 0.98
 
-Cette équation n'est pas directement codée, mais **simulée itérativement** dans `trajectory.py` pour prédire la trajectoire avant le tir.
-
-### 4. Détection de collision circulaire (cratères)
-
-Pour créer un cratère circulaire de rayon R :
-
-```
-distance² = dx² + dy²
-Si distance² ≤ R², alors détruire le pixel
+Code (`gun.py`, `grenade.py`) :
+```python
+self.velocity_y += self.GRAVITY
+if self.air_friction:
+    self.velocity_x *= self.AIR_FRICTION_COEF
+    self.velocity_y *= self.AIR_FRICTION_COEF
 ```
 
-**Application dans le code** (`terrain.py`) :
+### 4. Rebonds des grenades
+```
+vy_après = -vy_avant × d
+vx_après = vx_avant × f
+```
+Amortissement d = 0.6, friction sol f = 0.8
+
+Code (`grenade.py`) :
+```python
+self.velocity_y = -self.velocity_y * self.bounce_damping
+self.velocity_x *= 0.8
+```
+
+### 5. Collision circulaire (cratères)
+```
+Si dx² + dy² ≤ R² alors détruire pixel
+```
+Code (`terrain.py`) :
 ```python
 for dx in range(-radius, radius + 1):
     for dy in range(-radius, radius + 1):
         if dx*dx + dy*dy <= radius*radius:
-            self.mask[px, py] = False  # Détruire le pixel
+            self.mask[px, py] = False
 ```
 
-### 5. Collision rectangle-rectangle (AABB)
+### 6. Dégâts d'explosion
+```
+ratio = distance / rayon_max
+damage = damage_max × (1 - ratio)²
+```
+Minimum 5 HP, maximum 50 HP
 
-Détection entre le projectile et les personnages :
-
+Code (`main.py`) :
 ```python
-def check_collision(self, target_rect):
-    projectile_rect = pygame.Rect(self.x - self.radius, 
-                                   self.y - self.radius,
-                                   self.radius * 2, 
-                                   self.radius * 2)
-    return projectile_rect.colliderect(target_rect)
+distance_ratio = distance / explosion_radius
+damage = int(max_damage * (1 - distance_ratio) ** 2)
+damage = max(5, damage)
 ```
-
-Utilise l'algorithme **AABB (Axis-Aligned Bounding Box)** de Pygame.
 
 ---
 
-## 🚀 Fonctionnalités Implémentées
+## Fonctionnalités Implémentées
 
-- ✅ Menu de démarrage
-- ✅ Système de trajectoire balistique réaliste
-- ✅ Prédiction de trajectoire en pointillés
-- ✅ Terrain destructible avec cratères
-- ✅ Collision personnage-terrain pixel-perfect
-- ✅ Système de points de vie (100 HP)
-- ✅ Gravité et physique du saut
-- ✅ Écran de victoire/défaite
-- ✅ Bouton rejouer avec nouveau terrain
+### Système de jeu
+- Menu principal : Jouer, Paramètres, Quitter
+- Configuration partie : joueurs (2+), vers/joueur (1+), terrains
+- Sélection terrain : aléatoire ou fichiers .txt prédéfinis
+- Menu pause (ESC) avec accès paramètres
+- Écran victoire avec bouton rejouer
+- Rotation automatique des tours (20s par tour)
+- Timer visible avec alerte rouge (< 5s)
+- Affichage noms des vers (15 prénoms aléatoires)
+
+### Armes et combat
+- Roquette : Impact direct, cratère 30px, 20 HP de dégâts
+- Grenade : Rebonds amortis, explosion après 5s ou 10 rebonds, cratère 40px, jusqu'à 50 HP
+- Menu sélection arme : Clic droit ou TAB
+- Frottements d'air : Option activable/désactivable (coef 0.98)
+- Prédiction trajectoire : Pointillés colorés selon arme
+
+### Physique et terrain
+- Trajectoire balistique réaliste
+- Terrain destructible avec cratères circulaires
+- Génération procédurale avec hauteurs lissées
+- Eau mortelle (mort instantanée)
+- Collision pixel-perfect (masques numpy)
+- Rebonds grenades avec amortissement
+- Gravité différenciée : 0.5 (projectiles), 0.8 (vers)
+
+### Interface utilisateur
+- HUD complet : Angle, puissance, timer, HP
+- Ligne de visée orientable
+- Sprites vers avec flip horizontal
+- Personnalisation touches complète
+- Visualisation terrain avant partie
+- Affichage temps restant grenades
+- Distinction visuelle par couleur (armes, alertes)
 
 ---
 
-## 🎯 Améliorations Possibles
+## Installation
 
-D'après le cahier des charges initial (`ToDO.md`), voici les fonctionnalités avancées à implémenter :
-
-### Projectiles avancés
-- **Roquette** : Vitesse élevée, impact unique, destruction importante
-- **Grenade** : Vitesse faible, rebonds multiples, explosion après 5s
-- **Frottements de l'air** : Force proportionnelle à v²
-
-### Effets environnementaux
-- **Vent** : Force horizontale affectant les projectiles
-- **Parachute** : Ralentissement de la chute
-- **Grappin** : Déplacement vertical du personnage
-
-### Physique avancée
-- **Frottements aqueux** : Si projectile dans l'eau
-- **Poussée d'Archimède** : Flottabilité
-- **Gravité variable** : Champ gravitationnel non uniforme
-
----
-
-## 📦 Dépendances
-
-```
-pygame==2.6.1
-numpy (pour le masque de terrain)
-```
-
-Installation :
+### Prérequis
 ```bash
 pip install pygame numpy
 ```
+
+### Lancer le jeu
+```bash
+python main.py
+```
+
+### Format fichiers terrain
+Dossier `terrains/` - Fichiers .txt 60×40 caractères :
+- `T` : Terre (bloc solide marron, 20×20px)
+- `W` : Eau (bloc bleu mortel, 20×20px)
+- `#` : Vide (transparent)
+
+---
+
+## Convention de Code
+
+Tous les commentaires utilisent le format `#` :
+```python
+# Commentaire simple pour expliquer le code
+def fonction():
+    # Description de ce que fait la fonction
+    x = 5  # Commentaire inline
+```
+
+Pas de docstrings `"""` dans le code pour plus de cohérence.
 
 ---
 

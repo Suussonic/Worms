@@ -80,7 +80,7 @@ time_remaining = turn_time_limit
 
 
 def init_game():
-    """Réinitialise la partie"""
+    # Réinitialise la partie
     global terrain, players_worms, projectiles, player_names
     global charging_power, is_charging, game_over, winner
     global current_player_index, current_worm_index, last_shooter
@@ -143,11 +143,11 @@ def init_game():
 
 
 def get_current_player():
-    """Retourne le nom du joueur actuel"""
+    # Retourne le nom du joueur actuel
     return player_names[current_player_index]
 
 def get_current_worm():
-    """Retourne le ver actif du joueur actuel"""
+    # Retourne le ver actif du joueur actuel
     player = get_current_player()
     worm_idx = current_worm_index[player]
     worms_list = players_worms[player]
@@ -165,14 +165,14 @@ def get_current_worm():
     return worms_list[worm_idx]
 
 def get_all_alive_worms():
-    """Retourne tous les vers vivants"""
+    # Retourne tous les vers vivants
     alive_worms = []
     for player_worms in players_worms.values():
         alive_worms.extend([w for w in player_worms if w.is_alive()])
     return alive_worms
 
 def next_turn():
-    """Passe au tour suivant avec rotation du ver"""
+    # Passe au tour suivant avec rotation du ver
     global current_player_index, current_worm_index, turn_start_time, time_remaining
     
     # Passer au joueur suivant

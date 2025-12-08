@@ -2,11 +2,9 @@ import pygame
 import math
 
 class UI:
-    """Classe pour gérer l'affichage/interface utilisateur du jeu"""
-    
     @staticmethod
     def draw_menu(screen, width, height):
-        """Dessine le menu principal avec 3 boutons"""
+        # Dessine le menu principal avec 3 boutons
         screen.fill((0, 0, 0))  # Fond noir
         
         # Titre
@@ -47,7 +45,7 @@ class UI:
     
     @staticmethod
     def draw_settings(screen, width, height, controls):
-        """Dessine l'écran des paramètres pour changer les touches"""
+        # Dessine l'écran des paramètres pour changer les touches
         screen.fill((30, 30, 30))  # Fond gris foncé
         
         # Titre
@@ -109,7 +107,7 @@ class UI:
     
     @staticmethod
     def draw_key_prompt(screen, width, height, action):
-        """Dessine une fenêtre pour demander une nouvelle touche"""
+        # Dessine une fenêtre pour demander une nouvelle touche
         overlay = pygame.Surface((width, height))
         overlay.set_alpha(200)
         overlay.fill((0, 0, 0))
@@ -127,7 +125,7 @@ class UI:
     
     @staticmethod
     def draw_game_setup(screen, width, height, num_players, worms_per_player):
-        """Dessine l'écran de configuration de partie"""
+        # Dessine l'écran de configuration de partie
         screen.fill((20, 20, 40))  # Fond bleu foncé
         
         # Titre
@@ -222,7 +220,7 @@ class UI:
     
     @staticmethod
     def draw_pause_menu(screen, width, height):
-        """Dessine le menu pause avec 3 boutons"""
+        # Dessine le menu pause avec 3 boutons
         # Overlay semi-transparent
         overlay = pygame.Surface((width, height))
         overlay.set_alpha(180)
@@ -267,13 +265,13 @@ class UI:
     
     @staticmethod
     def draw_player(screen, player):
-        """Dessine le joueur"""
+        # Dessine le joueur
         pygame.draw.rect(screen, (0, 255, 0), player.rect)
         player.draw_hp(screen)
     
     @staticmethod
     def draw_aim_line(screen, player, length=50):
-        """Dessine la ligne de visée du joueur"""
+        # Dessine la ligne de visée du joueur
         angle_rad = math.radians(player.aim_angle)
         end_x = player.rect.centerx + length * math.cos(angle_rad)
         end_y = player.rect.centery + length * math.sin(angle_rad)
@@ -283,7 +281,7 @@ class UI:
     
     @staticmethod
     def draw_hud(screen, player, charging_power, time_remaining=None):
-        """Affiche l'angle, la puissance et le timer en haut à gauche"""
+        # Affiche l'angle, la puissance et le timer en haut à gauche
         font = pygame.font.Font(None, 36)
         
         angle_text = font.render(f"Angle: {player.aim_angle}°", True, (255, 255, 255))
@@ -300,7 +298,7 @@ class UI:
     
     @staticmethod
     def draw_trajectory(screen, trajectory_calc, player, charging_power):
-        """Dessine la trajectoire prédite pendant la charge"""
+        # Dessine la trajectoire prédite pendant la charge
         if charging_power > 0:
             is_grenade = player.selected_weapon == "grenade"
             trajectory_points = trajectory_calc.calculate_trajectory_points(
@@ -315,13 +313,13 @@ class UI:
     
     @staticmethod
     def draw_projectiles(screen, projectiles):
-        """Dessine tous les projectiles actifs"""
+        # Dessine tous les projectiles actifs
         for projectile in projectiles:
             projectile.draw(screen)
     
     @staticmethod
     def draw_game_over(screen, width, height, winner):
-        """Dessine l'écran de victoire/défaite avec bouton rejouer"""
+        # Dessine l'écran de victoire/défaite avec bouton rejouer
         # Overlay gris semi-transparent
         overlay = pygame.Surface((width, height))
         overlay.set_alpha(180)
@@ -351,7 +349,7 @@ class UI:
     
     @staticmethod
     def draw_weapon_menu(screen, worm, selected_weapon, air_friction):
-        """Dessine le menu de sélection d'arme au-dessus du ver"""
+        # Dessine le menu de sélection d'arme au-dessus du ver
         menu_width = 200
         menu_height = 105
         menu_x = worm.rect.centerx - menu_width // 2

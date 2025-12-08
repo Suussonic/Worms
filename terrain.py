@@ -20,7 +20,7 @@ class Terrain:
         self.generate_terrain()
     
     def load_from_file(self, filepath):
-        """Charge un terrain depuis un fichier texte"""
+        # Charge un terrain depuis un fichier texte
         import os
         
         if not os.path.exists(filepath):
@@ -60,7 +60,7 @@ class Terrain:
             self.generate_terrain()
     
     def generate_terrain(self):
-        """Génère un terrain avec des blocs carrés aléatoires et de l'eau en bas"""
+        # Génère un terrain avec des blocs carrés aléatoires et de l'eau en bas
         import random
         
         # Remplir le fond
@@ -112,7 +112,7 @@ class Terrain:
         self.update_mask()
     
     def update_mask(self):
-        """Met à jour les masques de collision et d'eau basés sur la surface"""
+        # Met à jour les masques de collision et d'eau basés sur la surface
         # Parcourir tous les pixels et marquer ceux qui sont solides ou de l'eau
         for x in range(self.width):
             for y in range(self.height):
@@ -130,19 +130,19 @@ class Terrain:
                     self.water_mask[x, y] = False
     
     def is_solid(self, x, y):
-        """Vérifie si une position contient du terrain solide"""
+        # Vérifie si une position contient du terrain solide
         if x < 0 or x >= self.width or y < 0 or y >= self.height:
             return False
         return self.mask[int(x), int(y)]
     
     def is_water(self, x, y):
-        """Vérifie si une position contient de l'eau"""
+        # Vérifie si une position contient de l'eau
         if x < 0 or x >= self.width or y < 0 or y >= self.height:
             return False
         return self.water_mask[int(x), int(y)]
     
     def create_crater(self, x, y, radius=30):
-        """Crée un cratère circulaire dans le terrain"""
+        # Crée un cratère circulaire dans le terrain
         # Dessiner un cercle noir (transparent) pour créer le cratère
         pygame.draw.circle(self.surface, (0, 0, 0), (int(x), int(y)), radius)
         
@@ -155,7 +155,7 @@ class Terrain:
                         self.mask[px, py] = False
     
     def get_ground_height(self, x):
-        """Retourne la hauteur du sol à une position x donnée"""
+        # Retourne la hauteur du sol à une position x donnée
         if x < 0 or x >= self.width:
             return self.height
         
@@ -166,5 +166,5 @@ class Terrain:
         return self.height
     
     def draw(self, screen):
-        """Dessine le terrain sur l'écran"""
+        # Dessine le terrain sur l'écran
         screen.blit(self.surface, (0, 0))

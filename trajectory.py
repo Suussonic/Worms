@@ -2,26 +2,14 @@ import math
 import pygame
 
 class TrajectoryCalculator:
-    """Classe pour calculer et afficher les trajectoires de projectiles"""
-    
     def __init__(self, gravity=0.5):
         self.gravity = gravity
     
     def calculate_trajectory_points(self, start_x, start_y, angle, power, max_points=100, is_grenade=False, air_friction=False):
-        """
-        Calcule les points de la trajectoire d'un projectile
-        
-        Args:
-            start_x, start_y: Position de départ
-            angle: Angle de tir en degrés
-            power: Puissance du tir
-            max_points: Nombre maximum de points à calculer
-            is_grenade: Si True, réduit la vitesse initiale (grenade)
-            air_friction: Si True, applique les frottements de l'air
-            
-        Returns:
-            Liste de tuples (x, y) représentant la trajectoire
-        """
+        # Calcule les points de la trajectoire d'un projectile
+        # Args: start_x, start_y (position), angle (degrés), power (puissance)
+        # max_points (limite), is_grenade (réduit vitesse), air_friction (active friction)
+        # Returns: Liste de tuples (x, y)
         points = []
         
         # Convertir l'angle en radians et calculer les vitesses initiales
@@ -55,15 +43,8 @@ class TrajectoryCalculator:
         return points
     
     def draw_trajectory(self, screen, points, color=(255, 255, 255), radius=2):
-        """
-        Dessine la trajectoire en pointillés
-        
-        Args:
-            screen: Surface pygame où dessiner
-            points: Liste de points (x, y)
-            color: Couleur des points
-            radius: Rayon des points
-        """
+        # Dessine la trajectoire en pointillés
+        # Args: screen (surface pygame), points (liste x,y), color (couleur), radius (taille)
         # Dessiner un point tous les 5 points pour effet pointillé
         for i, point in enumerate(points):
             if i % 5 == 0:  # Espacer les points

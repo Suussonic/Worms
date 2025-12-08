@@ -54,11 +54,11 @@ class Projectile:
             )
     
     def is_out_of_bounds(self, width, height):
-        """Vrai si le projectile sort de l'écran"""
+        # Vrai si le projectile sort de l'écran
         return self.x < 0 or self.x > width or self.y > height
     
     def check_collision(self, target_rect):
-        """Collision avec un rectangle"""
+        # Collision avec un rectangle
         projectile_rect = pygame.Rect(
             self.x - self.radius,
             self.y - self.radius,
