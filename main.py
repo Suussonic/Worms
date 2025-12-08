@@ -117,7 +117,19 @@ def get_current_worm():
     """Retourne le ver actif du joueur actuel"""
     player = get_current_player()
     worm_idx = current_worm_index[player]
-    return players_worms[player][worm_idx]
+    worms_list = players_worms[player]
+    
+    # Si le ver actuel est mort, trouver le prochain ver vivant
+    if not worms_list[worm_idx].is_alive():
+        for i in range(len(worms_list)):
+            test_idx = (worm_idx + i) % len(worms_list)
+            if worms_list[test_idx].is_alive():
+                current_worm_index[player] = test_idx
+                return worms_list[test_idx]
+        # Aucun ver vivant pour ce joueur
+        return None
+    
+    return worms_list[worm_idx]
 
 def get_all_alive_worms():
     """Retourne tous les vers vivants"""
@@ -313,12 +325,19 @@ while running:
         # Déplacement du ver actif
         if len(projectiles) == 0:
             current_worm = get_current_worm()
-            current_worm.handle_input(controls)
+            if current_worm and current_worm.is_alive():
+                current_worm.handle_input(controls)
 
         # Mise à jour de tous les vers (gravité, collisions, etc.)
         for player_worms_list in players_worms.values():
             for worm in player_worms_list:
                 worm.update(HEIGHT, terrain)
+        
+        # Vérifier si le ver actif est mort (tombé dans le vide) et passer au tour suivant
+        current_worm = get_current_worm()
+        if current_worm is None or not current_worm.is_alive():
+            if len(projectiles) == 0:  # Seulement si aucun projectile en vol
+                next_turn()
 
         # Vérifier si une équipe est éliminée
         alive_by_player = {}
@@ -423,12 +442,13 @@ while running:
         
         # Ligne de visée + HUD du ver actif
         current_worm = get_current_worm()
-        UI.draw_aim_line(screen, current_worm)
-        UI.draw_hud(screen, current_worm, charging_power)
+        if current_worm and current_worm.is_alive():
+            UI.draw_aim_line(screen, current_worm)
+            UI.draw_hud(screen, current_worm, charging_power)
 
-        # Trajectoire prévisionnelle si on charge un tir
-        if is_charging:
-            UI.draw_trajectory(screen, trajectory_calc, current_worm, charging_power)
+            # Trajectoire prévisionnelle si on charge un tir
+            if is_charging:
+                UI.draw_trajectory(screen, trajectory_calc, current_worm, charging_power)
 
         # Dessiner les projectiles
         UI.draw_projectiles(screen, projectiles)

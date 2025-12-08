@@ -55,6 +55,10 @@ class Worm:
 
         self.rect.x += self.velocity.x
         self.rect.y += self.velocity.y
+        
+        # Si le ver sort de l'écran (haut ou bas), il meurt
+        if self.rect.y < -10 or self.rect.y > screen_height + 10:
+            self.hp = 0
 
         # Gestion collision avec le terrain
         if terrain:
