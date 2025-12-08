@@ -1,5 +1,6 @@
 import pygame
 import math
+import os  # Nécessaire pour vérifier le fichier
 
 class Grenade:
     def __init__(self, x, y, angle, power, owner=None, air_friction=False):
@@ -41,6 +42,19 @@ class Grenade:
         
         # Coefficient de restitution (élasticité des rebonds)
         self.bounce_damping = 0.6  # 60% de l'énergie conservée
+
+        # --- GESTION DU SPRITE ---
+        self.image = None
+        # Chemin vers l'image (ajuste si ton image est ailleurs)
+        image_path = "image/grenade.png" 
+        
+        if os.path.exists(image_path):
+            try:
+                original_image = pygame.image.load(image_path).convert_alpha()
+                # On redimensionne l'image (16x16 pixels pour être visible mais petit)
+                self.image = pygame.transform.scale(original_image, (16, 16))
+            except Exception as e:
+                print(f"Erreur chargement image grenade: {e}")
     
     def update(self, terrain=None):
         if not self.active:
@@ -157,13 +171,19 @@ class Grenade:
     
     def draw(self, screen):
         if self.active:
-            # Dessiner la grenade (cercle vert foncé)
-            pygame.draw.circle(
-                screen,
-                (0, 150, 0),
-                (int(self.x), int(self.y)),
-                self.radius
-            )
+            if self.image:
+                # On centre l'image sur la position x, y
+                # get_rect(center=...) permet de placer le centre de l'image aux coordonnées x,y
+                rect = self.image.get_rect(center=(int(self.x), int(self.y)))
+                screen.blit(self.image, rect)
+            else:
+                # Fallback : Dessiner la grenade (cercle vert foncé)
+                pygame.draw.circle(
+                    screen,
+                    (0, 150, 0),
+                    (int(self.x), int(self.y)),
+                    self.radius
+                )
             
             # Afficher le temps restant avant explosion
             current_time = pygame.time.get_ticks()
