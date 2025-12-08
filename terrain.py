@@ -16,6 +16,41 @@ class Terrain:
         # Générer un terrain initial
         self.generate_terrain()
     
+    def load_from_file(self, filepath):
+        """Charge un terrain depuis un fichier texte"""
+        import os
+        
+        if not os.path.exists(filepath):
+            print(f"Fichier terrain introuvable : {filepath}")
+            self.generate_terrain()
+            return
+        
+        # Remplir le fond
+        self.surface.fill((0, 0, 0))
+        
+        # Taille des blocs
+        block_size = 20
+        
+        try:
+            with open(filepath, 'r') as f:
+                lines = f.readlines()
+            
+            for row_idx, line in enumerate(lines):
+                line = line.rstrip('\n')
+                for col_idx, char in enumerate(line):
+                    if char == 'T':  # T = Terre
+                        x = col_idx * block_size
+                        y = row_idx * block_size
+                        # Dessiner le bloc
+                        pygame.draw.rect(self.surface, (139, 90, 43), (x, y, block_size, block_size))
+                        pygame.draw.rect(self.surface, (110, 70, 30), (x, y, block_size, block_size), 1)
+            
+            # Mettre à jour le masque de collision
+            self.update_mask()
+        except Exception as e:
+            print(f"Erreur lors du chargement du terrain : {e}")
+            self.generate_terrain()
+    
     def generate_terrain(self):
         """Génère un terrain avec des blocs carrés aléatoires"""
         import random

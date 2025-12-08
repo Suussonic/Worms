@@ -185,6 +185,29 @@ class UI:
         worms_value_rect = worms_value.get_rect(center=(width // 2, 395))
         screen.blit(worms_value, worms_value_rect)
         
+        # Sélecteur de terrain
+        terrain_label = label_font.render("Terrain :", True, (200, 200, 200))
+        screen.blit(terrain_label, (150, 480))
+        
+        # Boutons flèches pour changer de terrain
+        prev_terrain = pygame.Rect(width // 2 - 200, 520, 50, 50)
+        next_terrain = pygame.Rect(width // 2 + 150, 520, 50, 50)
+        
+        pygame.draw.rect(screen, (100, 100, 200), prev_terrain)
+        pygame.draw.rect(screen, (255, 255, 255), prev_terrain, 2)
+        prev_text = value_font.render("<", True, (255, 255, 255))
+        screen.blit(prev_text, (width // 2 - 188, 518))
+        
+        pygame.draw.rect(screen, (100, 100, 200), next_terrain)
+        pygame.draw.rect(screen, (255, 255, 255), next_terrain, 2)
+        next_text = value_font.render(">", True, (255, 255, 255))
+        screen.blit(next_text, (width // 2 + 162, 518))
+        
+        # Visualizer du terrain (miniature)
+        visualizer_rect = pygame.Rect(width // 2 - 140, 520, 280, 140)
+        pygame.draw.rect(screen, (50, 50, 50), visualizer_rect)
+        pygame.draw.rect(screen, (255, 255, 255), visualizer_rect, 2)
+        
         # Bouton Commencer
         start_button = pygame.Rect(width // 2 - 120, height - 100, 240, 60)
         pygame.draw.rect(screen, (0, 200, 0), start_button)
@@ -194,7 +217,7 @@ class UI:
         start_text_rect = start_text.get_rect(center=start_button.center)
         screen.blit(start_text, start_text_rect)
         
-        return minus_players, plus_players, minus_worms, plus_worms, start_button
+        return minus_players, plus_players, minus_worms, plus_worms, prev_terrain, next_terrain, visualizer_rect, start_button
     
     @staticmethod
     def draw_pause_menu(screen, width, height):

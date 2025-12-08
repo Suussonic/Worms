@@ -24,6 +24,19 @@ key_to_change = None
 # Configuration de partie
 num_players = 2
 worms_per_player = 1
+selected_terrain = 0  # Index du terrain sélectionné
+
+# Scanner le dossier terrains pour obtenir la liste des fichiers .txt
+def get_terrain_files():
+    terrain_list = ["random"]  # Toujours avoir l'option aléatoire en premier
+    terrain_dir = "terrains"
+    if os.path.exists(terrain_dir):
+        for filename in sorted(os.listdir(terrain_dir)):
+            if filename.endswith('.txt'):
+                terrain_list.append(os.path.join(terrain_dir, filename))
+    return terrain_list
+
+terrain_files = get_terrain_files()
 
 # Contrôles par défaut
 controls = {
@@ -63,6 +76,12 @@ def init_game():
     global current_player_index, current_worm_index, last_shooter
 
     terrain = Terrain(WIDTH, HEIGHT)
+    
+    # Charger le terrain sélectionné
+    if selected_terrain == 0 or terrain_files[selected_terrain] == "random":
+        terrain.generate_terrain()
+    else:
+        terrain.load_from_file(terrain_files[selected_terrain])
     
     # Liste des prénoms disponibles
     import random
@@ -191,6 +210,8 @@ while running:
             plus_players = pygame.Rect(WIDTH // 2 + 50, 220, 50, 50)
             minus_worms = pygame.Rect(WIDTH // 2 - 100, 370, 50, 50)
             plus_worms = pygame.Rect(WIDTH // 2 + 50, 370, 50, 50)
+            prev_terrain = pygame.Rect(WIDTH // 2 - 200, 520, 50, 50)
+            next_terrain = pygame.Rect(WIDTH // 2 + 150, 520, 50, 50)
             start_button = pygame.Rect(WIDTH // 2 - 120, HEIGHT - 100, 240, 60)
             
             if minus_players.collidepoint(mouse_pos) and num_players > 2:
@@ -201,6 +222,10 @@ while running:
                 worms_per_player -= 1
             elif plus_worms.collidepoint(mouse_pos):
                 worms_per_player += 1
+            elif prev_terrain.collidepoint(mouse_pos):
+                selected_terrain = (selected_terrain - 1) % len(terrain_files)
+            elif next_terrain.collidepoint(mouse_pos):
+                selected_terrain = (selected_terrain + 1) % len(terrain_files)
             elif start_button.collidepoint(mouse_pos):
                 in_game_setup = False
                 init_game()
@@ -413,6 +438,37 @@ while running:
     elif in_game_setup:
         # Afficher l'écran de configuration de partie
         UI.draw_game_setup(screen, WIDTH, HEIGHT, num_players, worms_per_player)
+        
+        # Dessiner le visualizer du terrain
+        visualizer_rect = pygame.Rect(WIDTH // 2 - 140, 520, 280, 140)
+        
+        # Créer une miniature du terrain sélectionné
+        miniature = pygame.Surface((280, 140))
+        miniature.fill((135, 206, 235))  # Fond ciel bleu
+        
+        if selected_terrain == 0 or terrain_files[selected_terrain] == "random":
+            # Afficher "ALÉATOIRE"
+            font = pygame.font.Font(None, 36)
+            text = font.render("ALÉATOIRE", True, (255, 255, 255))
+            text_rect = text.get_rect(center=(140, 70))
+            miniature.blit(text, text_rect)
+        else:
+            # Charger et afficher le terrain
+            import os
+            if os.path.exists(terrain_files[selected_terrain]):
+                with open(terrain_files[selected_terrain], 'r') as f:
+                    lines = f.readlines()
+                
+                block_size = 7  # Taille réduite pour la miniature
+                for row_idx, line in enumerate(lines[:20]):  # Limiter à 20 lignes
+                    line = line.rstrip('\n')
+                    for col_idx, char in enumerate(line[:40]):  # Limiter à 40 colonnes
+                        if char == 'T':
+                            x = col_idx * block_size
+                            y = row_idx * block_size
+                            pygame.draw.rect(miniature, (139, 90, 43), (x, y, block_size, block_size))
+        
+        screen.blit(miniature, visualizer_rect)
     
     elif in_settings:
         # Afficher l'écran de paramètres
