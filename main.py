@@ -621,7 +621,7 @@ while running:
         for player, worms_list in players_worms.items():
             for worm in worms_list:
                 if worm.is_alive():
-                    UI.draw_player(screen, worm)
+                    worm.draw(screen)
         
         # Ligne de visée + HUD du ver actif
         current_worm = get_current_worm()
