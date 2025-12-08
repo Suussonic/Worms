@@ -150,7 +150,7 @@ class Worm:
         return self.hp > 0
     
     def draw(self, screen):
-        """Affiche le ver (sprite ou rectangle)"""
+        # Affiche le ver (sprite ou rectangle)
         if self.image:
             if self.facing_right:
                 screen.blit(self.image, self.rect)

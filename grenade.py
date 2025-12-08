@@ -88,7 +88,7 @@ class Grenade:
             self.handle_terrain_collision(terrain, old_x, old_y)
     
     def handle_terrain_collision(self, terrain, old_x, old_y):
-        """Gère les collisions et rebonds avec le terrain"""
+        # Gère les collisions et rebonds avec le terrain
         # Vérifier si la grenade touche le terrain (vérifier plusieurs points autour du rayon)
         collision_detected = False
         
@@ -154,19 +154,19 @@ class Grenade:
                 self.explode()
     
     def pause(self):
-        """Met le timer de la grenade en pause"""
+        # Met le timer de la grenade en pause
         if not self.is_paused:
             self.is_paused = True
             self.pause_start = pygame.time.get_ticks()
     
     def resume(self):
-        """Reprend le timer de la grenade"""
+        # Reprend le timer de la grenade
         if self.is_paused:
             self.is_paused = False
             self.paused_time += pygame.time.get_ticks() - self.pause_start
     
     def explode(self):
-        """Marque la grenade comme inactive (explosion)"""
+        # Marque la grenade comme inactive (explosion)
         self.active = False
     
     def draw(self, screen):
@@ -194,11 +194,11 @@ class Grenade:
             screen.blit(timer_text, (int(self.x) - 15, int(self.y) - 20))
     
     def is_out_of_bounds(self, width, height):
-        """Vrai si la grenade sort de l'écran"""
+        # Vrai si la grenade sort de l'écran
         return self.x < -50 or self.x > width + 50 or self.y > height + 50
     
     def check_collision(self, rect):
-        """Vérifie la collision avec un rectangle (vers)"""
+        # Vérifie la collision avec un rectangle (vers)
         grenade_rect = pygame.Rect(
             int(self.x - self.radius),
             int(self.y - self.radius),
@@ -208,6 +208,6 @@ class Grenade:
         return grenade_rect.colliderect(rect)
     
     def get_time_remaining(self):
-        """Retourne le temps restant avant explosion en secondes"""
+        # Retourne le temps restant avant explosion en secondes
         elapsed = pygame.time.get_ticks() - self.creation_time - self.paused_time
         return max(0, (self.explosion_time - elapsed) / 1000)
