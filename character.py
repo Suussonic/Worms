@@ -20,19 +20,27 @@ class Worm:
         self.hp = 100
         self.max_hp = 100
 
-    def handle_input(self):
+    def handle_input(self, controls=None):
         keys = pygame.key.get_pressed()
+        
+        # Si aucun contrôle personnalisé n'est fourni, utiliser les touches par défaut
+        if controls is None:
+            controls = {
+                'left': pygame.K_LEFT,
+                'right': pygame.K_RIGHT,
+                'jump': pygame.K_SPACE
+            }
 
         # Gauche / Droite
-        if keys[pygame.K_LEFT] or keys[pygame.K_q]:
+        if keys[controls['left']]:
             self.velocity.x = -self.SPEED
-        elif keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+        elif keys[controls['right']]:
             self.velocity.x = self.SPEED
         else:
             self.velocity.x = 0
 
         # Saut (seulement si on est au sol)
-        if keys[pygame.K_SPACE] and self.on_ground:
+        if keys[controls['jump']] and self.on_ground:
             self.jump()
 
     def jump(self):

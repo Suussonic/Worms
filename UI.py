@@ -5,6 +5,126 @@ class UI:
     """Classe pour gérer l'affichage/interface utilisateur du jeu"""
     
     @staticmethod
+    def draw_menu(screen, width, height):
+        """Dessine le menu principal avec 3 boutons"""
+        screen.fill((0, 0, 0))  # Fond noir
+        
+        # Titre
+        big_font = pygame.font.Font(None, 100)
+        title = big_font.render("WORMS", True, (0, 255, 0))
+        title_rect = title.get_rect(center=(width // 2, height // 4))
+        screen.blit(title, title_rect)
+        
+        # Bouton Jouer
+        play_button = pygame.Rect(width // 2 - 150, height // 2 - 70, 300, 60)
+        pygame.draw.rect(screen, (0, 200, 0), play_button)
+        pygame.draw.rect(screen, (255, 255, 255), play_button, 3)
+        
+        button_font = pygame.font.Font(None, 50)
+        play_text = button_font.render("JOUER", True, (255, 255, 255))
+        play_text_rect = play_text.get_rect(center=play_button.center)
+        screen.blit(play_text, play_text_rect)
+        
+        # Bouton Settings
+        settings_button = pygame.Rect(width // 2 - 150, height // 2 + 10, 300, 60)
+        pygame.draw.rect(screen, (50, 50, 200), settings_button)
+        pygame.draw.rect(screen, (255, 255, 255), settings_button, 3)
+        
+        settings_text = button_font.render("SETTINGS", True, (255, 255, 255))
+        settings_text_rect = settings_text.get_rect(center=settings_button.center)
+        screen.blit(settings_text, settings_text_rect)
+        
+        # Bouton Quitter
+        quit_button = pygame.Rect(width // 2 - 150, height // 2 + 90, 300, 60)
+        pygame.draw.rect(screen, (200, 0, 0), quit_button)
+        pygame.draw.rect(screen, (255, 255, 255), quit_button, 3)
+        
+        quit_text = button_font.render("QUITTER", True, (255, 255, 255))
+        quit_text_rect = quit_text.get_rect(center=quit_button.center)
+        screen.blit(quit_text, quit_text_rect)
+        
+        return play_button, settings_button, quit_button
+    
+    @staticmethod
+    def draw_settings(screen, width, height, controls):
+        """Dessine l'écran des paramètres pour changer les touches"""
+        screen.fill((30, 30, 30))  # Fond gris foncé
+        
+        # Titre
+        title_font = pygame.font.Font(None, 80)
+        title = title_font.render("PARAMETRES", True, (255, 255, 255))
+        title_rect = title.get_rect(center=(width // 2, 60))
+        screen.blit(title, title_rect)
+        
+        # Instructions
+        small_font = pygame.font.Font(None, 30)
+        instruction = small_font.render("Cliquez sur une action pour changer sa touche", True, (200, 200, 200))
+        instruction_rect = instruction.get_rect(center=(width // 2, 120))
+        screen.blit(instruction, instruction_rect)
+        
+        # Afficher les contrôles
+        control_font = pygame.font.Font(None, 36)
+        y_offset = 180
+        button_rects = {}
+        
+        control_labels = {
+            'left': 'Déplacer à gauche',
+            'right': 'Déplacer à droite',
+            'jump': 'Sauter',
+            'aim_up': 'Angle vers le haut',
+            'aim_down': 'Angle vers le bas',
+            'shoot': 'Tirer'
+        }
+        
+        for key, label in control_labels.items():
+            # Label de l'action
+            action_text = control_font.render(f"{label}:", True, (255, 255, 255))
+            screen.blit(action_text, (100, y_offset))
+            
+            # Bouton avec la touche actuelle
+            key_name = pygame.key.name(controls[key]).upper()
+            button_rect = pygame.Rect(width - 250, y_offset - 5, 150, 40)
+            pygame.draw.rect(screen, (70, 70, 70), button_rect)
+            pygame.draw.rect(screen, (255, 255, 255), button_rect, 2)
+            
+            key_text = control_font.render(key_name, True, (0, 255, 0))
+            key_text_rect = key_text.get_rect(center=button_rect.center)
+            screen.blit(key_text, key_text_rect)
+            
+            button_rects[key] = button_rect
+            y_offset += 60
+        
+        # Bouton Retour
+        back_button = pygame.Rect(width // 2 - 100, height - 80, 200, 50)
+        pygame.draw.rect(screen, (0, 150, 0), back_button)
+        pygame.draw.rect(screen, (255, 255, 255), back_button, 3)
+        
+        back_font = pygame.font.Font(None, 40)
+        back_text = back_font.render("RETOUR", True, (255, 255, 255))
+        back_text_rect = back_text.get_rect(center=back_button.center)
+        screen.blit(back_text, back_text_rect)
+        
+        return button_rects, back_button
+    
+    @staticmethod
+    def draw_key_prompt(screen, width, height, action):
+        """Dessine une fenêtre pour demander une nouvelle touche"""
+        overlay = pygame.Surface((width, height))
+        overlay.set_alpha(200)
+        overlay.fill((0, 0, 0))
+        screen.blit(overlay, (0, 0))
+        
+        prompt_font = pygame.font.Font(None, 50)
+        prompt_text = prompt_font.render(f"Appuyez sur une touche pour '{action}'", True, (255, 255, 0))
+        prompt_rect = prompt_text.get_rect(center=(width // 2, height // 2))
+        screen.blit(prompt_text, prompt_rect)
+        
+        cancel_font = pygame.font.Font(None, 30)
+        cancel_text = cancel_font.render("Appuyez sur ESC pour annuler", True, (200, 200, 200))
+        cancel_rect = cancel_text.get_rect(center=(width // 2, height // 2 + 60))
+        screen.blit(cancel_text, cancel_rect)
+    
+    @staticmethod
     def draw_player(screen, player):
         """Dessine le joueur"""
         pygame.draw.rect(screen, (0, 255, 0), player.rect)
