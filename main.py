@@ -578,14 +578,16 @@ while running:
                 with open(terrain_files[selected_terrain], 'r') as f:
                     lines = f.readlines()
                 
-                block_size = 7  # Taille réduite pour la miniature
-                for row_idx, line in enumerate(lines[:20]):  # Limiter à 20 lignes
+                block_size = 3.5  # Taille plus petite pour afficher 40 lignes dans 140px de hauteur
+                for row_idx, line in enumerate(lines[:40]):  # Afficher toutes les 40 lignes
                     line = line.rstrip('\n')
-                    for col_idx, char in enumerate(line[:40]):  # Limiter à 40 colonnes
-                        if char == 'T':
-                            x = col_idx * block_size
-                            y = row_idx * block_size
-                            pygame.draw.rect(miniature, (139, 90, 43), (x, y, block_size, block_size))
+                    for col_idx, char in enumerate(line[:60]):  # 60 colonnes max
+                        x = col_idx * block_size
+                        y = row_idx * block_size
+                        if char == 'T':  # Terre
+                            pygame.draw.rect(miniature, (139, 90, 43), (int(x), int(y), int(block_size), int(block_size)))
+                        elif char == 'W':  # Eau
+                            pygame.draw.rect(miniature, (30, 144, 255), (int(x), int(y), int(block_size), int(block_size)))
         
         screen.blit(miniature, visualizer_rect)
     

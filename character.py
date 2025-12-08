@@ -70,6 +70,15 @@ class Worm:
 
         # Gestion collision avec le terrain
         if terrain:
+            # Vérifier si le ver touche l'eau (mort instantanée)
+            for y_offset in range(0, self.rect.height, 5):
+                for x_offset in range(0, self.rect.width, 5):
+                    check_x = self.rect.left + x_offset
+                    check_y = self.rect.top + y_offset
+                    if terrain.is_water(check_x, check_y):
+                        self.hp = 0  # Mort instantanée dans l'eau
+                        return
+            
             # Vérifier les collisions latérales (gauche/droite)
             collision_lateral = False
             for y_offset in range(0, self.rect.height, 5):
